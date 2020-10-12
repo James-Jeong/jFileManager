@@ -1,0 +1,772 @@
+==32628== Memcheck, a memory error detector
+==32628== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==32628== Using Valgrind-3.15.0-608cb11914-20190413 and LibVEX; rerun with -h for copyright info
+==32628== Command: ./run
+==32628== Parent PID: 2160
+==32628== 
+--32628-- 
+--32628-- Valgrind options:
+--32628--    --leak-check=full
+--32628--    --show-leak-kinds=all
+--32628--    --log-file=valgrind_log.txt
+--32628--    -v
+--32628--    --error-limit=no
+--32628--    --track-origins=yes
+--32628-- Contents of /proc/version:
+--32628--   Linux version 3.10.0-862.el7.x86_64 (builder@kbuilder.dev.centos.org) (gcc version 4.8.5 20150623 (Red Hat 4.8.5-28) (GCC) ) #1 SMP Fri Apr 20 16:44:24 UTC 2018
+--32628-- 
+--32628-- Arch and hwcaps: AMD64, LittleEndian, amd64-rdtscp-sse3-ssse3
+--32628-- Page sizes: currently 4096, max supported 4096
+--32628-- Valgrind library directory: /usr/libexec/valgrind
+--32628-- Reading syms from /home/dev1/src_test/jFileManager/test/run
+--32628-- Reading syms from /usr/lib64/ld-2.17.so
+--32628-- Reading syms from /usr/libexec/valgrind/memcheck-amd64-linux
+--32628--    object doesn't have a symbol table
+--32628--    object doesn't have a dynamic symbol table
+--32628-- Scheduler: using generic scheduler lock implementation.
+--32628-- Reading suppressions file: /usr/libexec/valgrind/default.supp
+==32628== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-32628-by-dev1-on-dev1
+==32628== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-32628-by-dev1-on-dev1
+==32628== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-32628-by-dev1-on-dev1
+==32628== 
+==32628== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==32628== don't want to do, unless you know exactly what you're doing,
+==32628== or are doing some strange experiment):
+==32628==   /usr/libexec/valgrind/../../bin/vgdb --pid=32628 ...command...
+==32628== 
+==32628== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==32628==   /path/to/gdb ./run
+==32628== and then give GDB the following command
+==32628==   target remote | /usr/libexec/valgrind/../../bin/vgdb --pid=32628
+==32628== --pid is optional if only one valgrind process is running
+==32628== 
+--32628-- REDIR: 0x4019e30 (ld-linux-x86-64.so.2:strlen) redirected to 0x580c7ed5 (???)
+--32628-- REDIR: 0x4019c00 (ld-linux-x86-64.so.2:index) redirected to 0x580c7eef (???)
+--32628-- Reading syms from /usr/libexec/valgrind/vgpreload_core-amd64-linux.so
+--32628-- Reading syms from /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so
+==32628== WARNING: new redirection conflicts with existing -- ignoring it
+--32628--     old: 0x04019e30 (strlen              ) R-> (0000.0) 0x580c7ed5 ???
+--32628--     new: 0x04019e30 (strlen              ) R-> (2007.0) 0x04c2d1b0 strlen
+--32628-- REDIR: 0x4019db0 (ld-linux-x86-64.so.2:strcmp) redirected to 0x4c2e300 (strcmp)
+--32628-- REDIR: 0x401aa70 (ld-linux-x86-64.so.2:mempcpy) redirected to 0x4c31f90 (mempcpy)
+--32628-- Reading syms from /usr/lib64/libc-2.17.so
+--32628-- REDIR: 0x4ec7130 (libc.so.6:strcasecmp) redirected to 0x4a247a0 (_vgnU_ifunc_wrapper)
+--32628-- REDIR: 0x4ec3eb0 (libc.so.6:strnlen) redirected to 0x4a247a0 (_vgnU_ifunc_wrapper)
+--32628-- REDIR: 0x4ec9400 (libc.so.6:strncasecmp) redirected to 0x4a247a0 (_vgnU_ifunc_wrapper)
+--32628-- REDIR: 0x4ec6910 (libc.so.6:memset) redirected to 0x4a247a0 (_vgnU_ifunc_wrapper)
+--32628-- REDIR: 0x4ec68c0 (libc.so.6:memcpy@GLIBC_2.2.5) redirected to 0x4a247a0 (_vgnU_ifunc_wrapper)
+--32628-- REDIR: 0x4ec58a0 (libc.so.6:__GI_strrchr) redirected to 0x4c2cb70 (__GI_strrchr)
+--32628-- REDIR: 0x4ebc6b0 (libc.so.6:malloc) redirected to 0x4c29eec (malloc)
+--32628-- REDIR: 0x4ec3dd0 (libc.so.6:__GI_strlen) redirected to 0x4c2d110 (__GI_strlen)
+--32628-- REDIR: 0x4ecbb40 (libc.so.6:__GI_memcpy) redirected to 0x4c2efb0 (__GI_memcpy)
+--32628-- REDIR: 0x4ebcbb0 (libc.so.6:realloc) redirected to 0x4c2c1c5 (realloc)
+--32628-- REDIR: 0x4ecd3c0 (libc.so.6:strchrnul) redirected to 0x4c31ab0 (strchrnul)
+--32628-- REDIR: 0x4ec6ae0 (libc.so.6:__GI_mempcpy) redirected to 0x4c31cc0 (__GI_mempcpy)
+--32628-- REDIR: 0x4ebcad0 (libc.so.6:free) redirected to 0x4c2afe6 (free)
+==32628== Invalid read of size 8
+==32628==    at 0x401CDE: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x5205698 is 0 bytes after a block of size 8 alloc'd
+==32628==    at 0x4C29F73: malloc (vg_replace_malloc.c:309)
+==32628==    by 0x401B9A: JFMNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F1F: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+--32628-- REDIR: 0x4ec3d80 (libc.so.6:strlen) redirected to 0x4a247a0 (_vgnU_ifunc_wrapper)
+--32628-- REDIR: 0x4ec3f50 (libc.so.6:strncat) redirected to 0x4a247a0 (_vgnU_ifunc_wrapper)
+--32628-- REDIR: 0x4ed11b0 (libc.so.6:__strncat_sse2) redirected to 0x4c2cf80 (strncat)
+==32628== Invalid read of size 1
+==32628==    at 0x4C2D124: __GI_strlen (vg_replace_strmem.c:462)
+==32628==    by 0x4EA76C1: puts (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4014E0: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x5205a11 is 0 bytes after a block of size 49 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401483: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Syscall param access(pathname) points to unaddressable byte(s)
+==32628==    at 0x4F26A57: access (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4016D0: JFileLoad (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401520: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x5205a11 is 0 bytes after a block of size 49 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401483: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Syscall param open(filename) points to unaddressable byte(s)
+==32628==    at 0x4F26760: __open_nocancel (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4EB248F: _IO_file_fopen@@GLIBC_2.2.5 (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4EA5C13: __fopen_internal (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4016EA: JFileLoad (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401520: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x5205a11 is 0 bytes after a block of size 49 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401483: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+--32628-- REDIR: 0x4edc920 (libc.so.6:__GI_strstr) redirected to 0x4c32220 (__strstr_sse2)
+==32628== Syscall param open(filename) points to unaddressable byte(s)
+==32628==    at 0x4F26760: __open_nocancel (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4EB248F: _IO_file_fopen@@GLIBC_2.2.5 (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4EA5C13: __fopen_internal (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x401AE8: JFileGetLine (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401714: JFileLoad (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401520: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x5205a11 is 0 bytes after a block of size 49 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401483: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Syscall param open(filename) points to unaddressable byte(s)
+==32628==    at 0x4F26760: __open_nocancel (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4EB248F: _IO_file_fopen@@GLIBC_2.2.5 (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4EA5C13: __fopen_internal (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x40172B: JFileLoad (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401520: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x5205a11 is 0 bytes after a block of size 49 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401483: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Invalid write of size 8
+==32628==    at 0x401D99: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x52061e0 is 0 bytes inside a block of size 2 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401D5F: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Invalid write of size 8
+==32628==    at 0x401DB3: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x52061e8 is 6 bytes after a block of size 2 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401D5F: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Invalid read of size 8
+==32628==    at 0x401CDE: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400FA5: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x52061f0 is 14 bytes after a block of size 2 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401D5F: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Conditional jump or move depends on uninitialised value(s)
+==32628==    at 0x401B5A: JFileGetName (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401F3A: JFMGetFileName (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x40204A: JFMFindFileByName (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D07: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400FA5: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x401B67: JFileGetName (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401F3A: JFMGetFileName (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x40204A: JFMFindFileByName (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D07: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400FA5: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+--32628-- REDIR: 0x4ec3f90 (libc.so.6:strncmp) redirected to 0x4a247a0 (_vgnU_ifunc_wrapper)
+--32628-- REDIR: 0x4ec3fd0 (libc.so.6:__GI_strncmp) redirected to 0x4c2d940 (__GI_strncmp)
+==32628== Conditional jump or move depends on uninitialised value(s)
+==32628==    at 0x401D0B: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400FA5: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Conditional jump or move depends on uninitialised value(s)
+==32628==    at 0x401E43: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Conditional jump or move depends on uninitialised value(s)
+==32628==    at 0x401763: JFileRemove (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E5D: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x40176B: JFileRemove (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E5D: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x401778: JFileRemove (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E5D: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x40178E: JFileRemove (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E5D: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x40179A: JFileRemove (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E5D: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x4017A7: JFileRemove (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E5D: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Syscall param access(pathname) points to unaddressable byte(s)
+==32628==    at 0x4F26A57: access (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4017B7: JFileRemove (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E5D: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x5205a11 is 0 bytes after a block of size 49 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401483: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x4017C0: JFileRemove (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E5D: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Syscall param unlink(pathname) points to unaddressable byte(s)
+==32628==    at 0x4F28147: unlink (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4EA2DB8: remove (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4017CB: JFileRemove (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E5D: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x5205a11 is 0 bytes after a block of size 49 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401483: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Conditional jump or move depends on uninitialised value(s)
+==32628==    at 0x401572: JFileDelete (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E7A: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x401580: JFileDelete (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E7A: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x401590: JFileDelete (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E7A: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x4015A3: JFileDelete (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E7A: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x4015B3: JFileDelete (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E7A: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x4015C6: JFileDelete (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E7A: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x4015E9: JFileDelete (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E7A: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Conditional jump or move depends on uninitialised value(s)
+==32628==    at 0x4C2B020: free (vg_replace_malloc.c:540)
+==32628==    by 0x40165C: JFileDelete (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E7A: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== Invalid write of size 8
+==32628==    at 0x401661: JFileDelete (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E7A: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x52061e0 is 0 bytes inside a block of size 2 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401D5F: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== HEAP SUMMARY:
+==32628==     in use at exit: 0 bytes in 0 blocks
+==32628==   total heap usage: 27 allocs, 27 frees, 2,663 bytes allocated
+==32628== 
+==32628== All heap blocks were freed -- no leaks are possible
+==32628== 
+==32628== ERROR SUMMARY: 31 errors from 31 contexts (suppressed: 0 from 0)
+==32628== 
+==32628== 1 errors in context 1 of 31:
+==32628== Invalid write of size 8
+==32628==    at 0x401661: JFileDelete (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E7A: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x52061e0 is 0 bytes inside a block of size 2 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401D5F: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 2 of 31:
+==32628== Conditional jump or move depends on uninitialised value(s)
+==32628==    at 0x4C2B020: free (vg_replace_malloc.c:540)
+==32628==    by 0x40165C: JFileDelete (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E7A: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 3 of 31:
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x4015E9: JFileDelete (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E7A: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 4 of 31:
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x4015C6: JFileDelete (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E7A: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 5 of 31:
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x4015B3: JFileDelete (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E7A: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 6 of 31:
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x4015A3: JFileDelete (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E7A: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 7 of 31:
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x401590: JFileDelete (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E7A: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 8 of 31:
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x401580: JFileDelete (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E7A: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 9 of 31:
+==32628== Conditional jump or move depends on uninitialised value(s)
+==32628==    at 0x401572: JFileDelete (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E7A: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 10 of 31:
+==32628== Syscall param unlink(pathname) points to unaddressable byte(s)
+==32628==    at 0x4F28147: unlink (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4EA2DB8: remove (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4017CB: JFileRemove (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E5D: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x5205a11 is 0 bytes after a block of size 49 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401483: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 11 of 31:
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x4017C0: JFileRemove (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E5D: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 12 of 31:
+==32628== Syscall param access(pathname) points to unaddressable byte(s)
+==32628==    at 0x4F26A57: access (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4017B7: JFileRemove (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E5D: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x5205a11 is 0 bytes after a block of size 49 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401483: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 13 of 31:
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x4017A7: JFileRemove (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E5D: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 14 of 31:
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x40179A: JFileRemove (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E5D: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 15 of 31:
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x40178E: JFileRemove (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E5D: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 16 of 31:
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x401778: JFileRemove (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E5D: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 17 of 31:
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x40176B: JFileRemove (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E5D: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 18 of 31:
+==32628== Conditional jump or move depends on uninitialised value(s)
+==32628==    at 0x401763: JFileRemove (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401E5D: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 19 of 31:
+==32628== Conditional jump or move depends on uninitialised value(s)
+==32628==    at 0x401E43: JFMDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401008: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 20 of 31:
+==32628== Conditional jump or move depends on uninitialised value(s)
+==32628==    at 0x401D0B: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400FA5: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 21 of 31:
+==32628== Use of uninitialised value of size 8
+==32628==    at 0x401B67: JFileGetName (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401F3A: JFMGetFileName (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x40204A: JFMFindFileByName (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D07: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400FA5: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 22 of 31:
+==32628== Conditional jump or move depends on uninitialised value(s)
+==32628==    at 0x401B5A: JFileGetName (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401F3A: JFMGetFileName (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x40204A: JFMFindFileByName (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D07: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400FA5: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 23 of 31:
+==32628== Invalid read of size 8
+==32628==    at 0x401CDE: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400FA5: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x52061f0 is 14 bytes after a block of size 2 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401D5F: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 24 of 31:
+==32628== Invalid write of size 8
+==32628==    at 0x401DB3: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x52061e8 is 6 bytes after a block of size 2 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401D5F: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 25 of 31:
+==32628== Invalid write of size 8
+==32628==    at 0x401D99: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x52061e0 is 0 bytes inside a block of size 2 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401D5F: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 26 of 31:
+==32628== Syscall param open(filename) points to unaddressable byte(s)
+==32628==    at 0x4F26760: __open_nocancel (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4EB248F: _IO_file_fopen@@GLIBC_2.2.5 (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4EA5C13: __fopen_internal (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x40172B: JFileLoad (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401520: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x5205a11 is 0 bytes after a block of size 49 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401483: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 27 of 31:
+==32628== Syscall param open(filename) points to unaddressable byte(s)
+==32628==    at 0x4F26760: __open_nocancel (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4EB248F: _IO_file_fopen@@GLIBC_2.2.5 (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4EA5C13: __fopen_internal (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x401AE8: JFileGetLine (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401714: JFileLoad (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401520: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x5205a11 is 0 bytes after a block of size 49 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401483: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 28 of 31:
+==32628== Syscall param open(filename) points to unaddressable byte(s)
+==32628==    at 0x4F26760: __open_nocancel (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4EB248F: _IO_file_fopen@@GLIBC_2.2.5 (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4EA5C13: __fopen_internal (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4016EA: JFileLoad (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401520: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x5205a11 is 0 bytes after a block of size 49 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401483: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 29 of 31:
+==32628== Syscall param access(pathname) points to unaddressable byte(s)
+==32628==    at 0x4F26A57: access (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4016D0: JFileLoad (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401520: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x5205a11 is 0 bytes after a block of size 49 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401483: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 30 of 31:
+==32628== Invalid read of size 1
+==32628==    at 0x4C2D124: __GI_strlen (vg_replace_strmem.c:462)
+==32628==    by 0x4EA76C1: puts (in /usr/lib64/libc-2.17.so)
+==32628==    by 0x4014E0: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x5205a11 is 0 bytes after a block of size 49 alloc'd
+==32628==    at 0x4C2C291: realloc (vg_replace_malloc.c:836)
+==32628==    by 0x401483: JFileNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x401D29: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== 
+==32628== 1 errors in context 31 of 31:
+==32628== Invalid read of size 8
+==32628==    at 0x401CDE: JFMNewFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F3B: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628==  Address 0x5205698 is 0 bytes after a block of size 8 alloc'd
+==32628==    at 0x4C29F73: malloc (vg_replace_malloc.c:309)
+==32628==    by 0x401B9A: JFMNew (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x400F1F: _FileManager_CreateAndDeleteFile (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x402406: RunAllTests (in /home/dev1/src_test/jFileManager/test/run)
+==32628==    by 0x4012F7: main (in /home/dev1/src_test/jFileManager/test/run)
+==32628== 
+==32628== ERROR SUMMARY: 31 errors from 31 contexts (suppressed: 0 from 0)
