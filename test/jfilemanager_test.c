@@ -43,9 +43,9 @@ TEST(FileManager, CreateAndDeleteFile, {
 	JFMPtr fm = JFMNew();
 
 	// 정상 동작
-	EXPECT_NOT_NULL(JFMNewFile(fm, fileName, "r"));
+	EXPECT_NOT_NULL(JFMNewFile(fm, fileName));
 	// 같은 파일 이름으로 재호출 시 NULL 반환
-	EXPECT_NULL(JFMNewFile(fm, fileName, "r"));
+	EXPECT_NULL(JFMNewFile(fm, fileName));
 
 	// 정상 동작
 	EXPECT_NOT_NULL(JFMDeleteFile(fm, 0));
@@ -61,32 +61,105 @@ TEST(FileManager, CreateAndDeleteFile, {
 	JFMDelete(&fm);
 })
 
-/*
 
 TEST(FileManager, GetFileName, {
 	char *fileName = "fm_test.txt";
 	JFMPtr fm = JFMNew();
 
-	EXPECT_NOT_NULL(JFMGetFileName(fm));
-	EXPECT_STR_EQUAL(JFMGetFileName(fm), fileName);
+	// 정상 동작
+	JFMNewFile(fm, fileName);
+	EXPECT_NOT_NULL(JFMGetFileName(fm, 0));
+	EXPECT_STR_EQUAL(JFMGetFileName(fm, 0), fileName);
+
+	EXPECT_NULL(JFMGetFileName(NULL, 0));
+	EXPECT_NULL(JFMGetFileName(fm, 1));
+	EXPECT_NULL(JFMGetFileName(fm, -1));
+	EXPECT_NULL(JFMGetFileName(NULL, 1));
+
+	JFMDeleteFile(fm, 0);
+	EXPECT_NULL(JFMGetFileName(fm, 0));
+
+	JFMDelete(&fm);
+})
+
+TEST(FileManager, GetFilePath, {
+	char *fileName = "fm_test.txt";
+	char *filePath = "/home/dev1/src_test/jFileManager/test/fm_test.txt";
+	JFMPtr fm = JFMNew();
+
+	// 정상 동작
+	JFMNewFile(fm, fileName);
+	EXPECT_NOT_NULL(JFMGetFilePath(fm, 0));
+	EXPECT_STR_EQUAL(JFMGetFilePath(fm, 0), filePath);
+
+	EXPECT_NULL(JFMGetFilePath(NULL, 0));
+	EXPECT_NULL(JFMGetFilePath(fm, 1));
+	EXPECT_NULL(JFMGetFilePath(fm, -1));
+	EXPECT_NULL(JFMGetFilePath(NULL, 1));
+
+	JFMDeleteFile(fm, 0);
+	EXPECT_NULL(JFMGetFilePath(fm, 0));
 
 	JFMDelete(&fm);
 })
 
 TEST(FileManager, WriteAndReadFile, {
-	char *expected1 = "Hello world!";
-	char expected2[12];
+	char *expected1 = "Hello world!\n";
 	char *fileName = "fm_test.txt";
-	JFMPtr fm = JFMNew();
-	JFMNewFile(fm, "w+");
-	
-	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1));
-	EXPECT_STR_EQUAL(JFMReadFile(fm, 0)[0], expected1);
 
-	JFMDeleteFile(fm);
+	JFMPtr fm = JFMNew();
+	JFMNewFile(fm, fileName);
+	
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "w"));
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
+
+	char **dataList = JFMReadFile(fm, 0);
+	EXPECT_STR_EQUAL(dataList[0], expected1);
+	EXPECT_STR_EQUAL(dataList[1], expected1);
+	EXPECT_STR_EQUAL(dataList[2], expected1);
+
+	JFMDeleteFile(fm, 0);
 	JFMDelete(&fm);
 })
-*/
+
+TEST(FileManager, CopyFile, {
+	char *expected1 = "Hello world!\n";
+	char *fileName = "fm_test.txt";
+	char *filePath = "/home/dev1/src_test/jFileManager/fm_test2.txt";
+
+	JFMPtr fm = JFMNew();
+	JFMNewFile(fm, fileName);
+	
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "w"));
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
+
+	EXPECT_NOT_NULL(JFMCopyFile(fm, 0, filePath));
+	EXPECT_NOT_NULL(JFMCopyFile(fm, 0, NULL));
+
+	JFMDeleteFile(fm, 0);
+	//TODO 특정 경로의 파일도 삭제 가능해야함(복사한 파일 삭제)
+//	JFMDeleteFileByPath(fm, 0, filePath);
+	
+	JFMDelete(&fm);
+})
+
+TEST(FileManager, MoveFile, {
+	char *expected1 = "Hello world!\n";
+	char *fileName = "fm_test.txt";
+	char *filePath = "/home/dev1/src_test/jFileManager/fm_test2.txt";
+
+	JFMPtr fm = JFMNew();
+	JFMNewFile(fm, fileName);
+	
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "w"));
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
+
+	EXPECT_NOT_NULL(JFMMoveFile(fm, 0, filePath));
+
+	JFMDeleteFile(fm, 0);
+	JFMDelete(&fm);
+})
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Main Function
@@ -100,9 +173,12 @@ int main()
 		// @ Common Test -----------------------------------------
 		Test_FileManager_CreateAndDeleteObject,
 		Test_FileManager_SetAndGetUserData,
-		Test_FileManager_CreateAndDeleteFile
-//		Test_FileManager_GetFileName,
-//		Test_FileManager_WriteAndReadFile
+		Test_FileManager_CreateAndDeleteFile,
+		Test_FileManager_GetFileName,
+		Test_FileManager_GetFilePath,
+		Test_FileManager_WriteAndReadFile,
+//		Test_FileManager_CopyFile,
+		Test_FileManager_MoveFile
     );
 
     RUN_ALL_TESTS();

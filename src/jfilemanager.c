@@ -8,64 +8,50 @@
 /// Predefinitions of Static Functions for JFile
 ///////////////////////////////////////////////////////////////////////////////
 
-static JFilePtr JFileNew(const char *fileName, const char *mode);
+static JFilePtr JFileNew(const char *fileName);
 static void JFileDelete(JFilePtrContainer fileContainer);
 static void JFileClear(JFilePtr file);
-static FILE* JFileLoad(JFilePtr file, const char *mode);
+static JFilePtr JFileLoad(JFilePtr file);
 static void JFileRemove(JFilePtr file);
-static JFilePtr JFileWrite(JFilePtr file, const char *s);
+static JFilePtr JFileWrite(JFilePtr file, const char *s, const char *mode);
 static char** JFileRead(JFilePtr file, int length);
 static void JFileGetLine(const JFilePtr file);
 static char* JFileGetName(JFilePtr file);
+static char* JFileGetPath(JFilePtr file);
+static FILE* JFileOpen(JFilePtr file, const char *mode);
+static void JFileClose(JFilePtr file);
+static char* JFileSetName(JFilePtr file, const char *newFileName);
+static char* JFileSetPath(JFilePtr file, const char *newFilePath);
+static int JFileIncDupleNum(JFilePtr file);
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Static Functions for JFile
 ///////////////////////////////////////////////////////////////////////////////
 
-static JFilePtr JFileNew(const char *fileName, const char *mode)
+static JFilePtr JFileNew(const char *fileName)
 {
 	JFilePtr file = (JFilePtr)malloc(sizeof(JFile));
 	if(file == NULL) return NULL;
 
-	if(fileName != NULL)
-	{
-		file->fileName = strdup(fileName);
-		if(file->fileName == NULL) return NULL;
-		file->fileName[strlen(file->fileName)] = '\0';
-
-		file->filePath = getcwd(NULL, BUF_SIZE);
-		if(file->filePath == NULL) return NULL;
-		file->filePath[strlen(file->filePath)] = '\0';
-
-		if(strncat(file->filePath, "/", 1) == NULL) return NULL;
-		if(strncat(file->filePath, file->fileName, strlen(file->fileName)) == NULL) return NULL;
-
-		int pathLength = strlen(file->filePath);
-		char *newFilePath = realloc(file->filePath, pathLength);
-		if(newFilePath == NULL)
-		{
-			free(file);
-			free(file->fileName);
-			free(file->filePath);
-			return NULL;
-		}
-		file->filePath = newFilePath;
-
-		printf("%s\n", file->filePath);
-	}
-
+	file->fileName = NULL;
+	file->filePath = NULL;
 	file->filePointer = NULL;
 	file->dataList = NULL;
+	file->dupleNum = 0;
 	file->line = 1;
 	file->totalCharNum = 0;
 
-	if(JFileLoad(file, mode) == NULL)
+	if(JFileSetName(file, fileName) == NULL)
+	{
+		free(file);
+		return NULL;
+	}
+
+	if(JFileLoad(file) == NULL)
 	{
 		JFileDelete(&file);
 		return NULL;
 	}
-
-	JFileRead(file, LINE_LENGTH);
 
 	return file;
 }
@@ -77,13 +63,15 @@ static void JFileDelete(JFilePtrContainer fileContainer)
 	if((*fileContainer)->filePath != NULL) free((*fileContainer)->filePath);
 	if((*fileContainer)->filePointer != NULL) fclose((*fileContainer)->filePointer);
 
-	char **dataList = (*fileContainer)->dataList;
-	if(dataList != NULL)
+	if((*fileContainer)->dataList != NULL)
 	{
 		int dataListIndex = 0;
 		for( ; dataListIndex < (*fileContainer)->line; dataListIndex++)
 		{
-			if(dataList[dataListIndex] != NULL) free(dataList[dataListIndex]);
+			if(((*fileContainer)->dataList)[dataListIndex] != NULL)
+			{
+				free(((*fileContainer)->dataList)[dataListIndex]);
+			}
 		}
 	}
 
@@ -91,9 +79,9 @@ static void JFileDelete(JFilePtrContainer fileContainer)
 	*fileContainer = NULL;
 }
 
-static FILE* JFileLoad(JFilePtr file, const char *mode)
+static JFilePtr JFileLoad(JFilePtr file)
 {
-	if((file == NULL) || (file->filePath == NULL) || (mode == NULL)) return NULL;
+	if((file == NULL) || (file->filePath == NULL)) return NULL;
 
 	if(file->filePointer != NULL) fclose(file->filePointer);
 	if(access(file->filePath, 0) == -1)
@@ -102,24 +90,33 @@ static FILE* JFileLoad(JFilePtr file, const char *mode)
 		if(tempFilePointer == NULL) return NULL;
 		fclose(tempFilePointer);
 	}
-
 	JFileGetLine(file);
 
+	return file;
+}
+
+static FILE* JFileOpen(JFilePtr file, const char *mode)
+{
+	if(file->filePointer != NULL) return NULL;
 	file->filePointer = fopen(file->filePath, mode);
 	if(file->filePointer == NULL) return NULL;
-
 	return file->filePointer;
+}
+
+static void JFileClose(JFilePtr file)
+{
+	if(file->filePointer != NULL)
+	{
+		if(fclose(file->filePointer) != 0) return;
+		file->filePointer = NULL;
+	}
 }
 
 static void JFileRemove(JFilePtr file)
 {
 	if(file == NULL) return;
 
-	if(file->filePointer != NULL)
-	{
-		if(fclose(file->filePointer) != 0) return;
-		file->filePointer = NULL;
-	}
+	JFileClose(file);
 
 	if((file->filePath != NULL) && (access(file->filePath, 0) == 0))
 	{
@@ -127,10 +124,13 @@ static void JFileRemove(JFilePtr file)
 	}
 }
 
-static JFilePtr JFileWrite(JFilePtr file, const char *s)
+static JFilePtr JFileWrite(JFilePtr file, const char *s, const char *mode)
 {
-	if((file == NULL) || (file->filePointer == NULL) || (s == NULL)) return NULL;
+	if((file == NULL) || (s == NULL) || (mode == NULL)) return NULL;
+	if(JFileOpen(file, mode) == NULL) return NULL;
 	if(fputs(s, file->filePointer) < 0) return NULL;
+	(file->line)++;
+	JFileClose(file);
 	return file;
 }
 
@@ -147,14 +147,17 @@ static void JFileClear(JFilePtr file)
 			file->dataList[fileIndex] = NULL;
 		}
 	}
+
+	file->line = 0;
+	file->totalCharNum = 0;
 }
 
 static char** JFileRead(JFilePtr file, int length)
 {
-	if((file == NULL) || (file->filePointer == NULL) || (file->line <= 0) || (length <= 0)) return NULL;
+	if((file == NULL) || (file->line <= 0) || (length <= 0)) return NULL;
+	if(JFileOpen(file, "r") == NULL) return NULL;
 
 	int fileIndex = 0;
-
 	if(file->dataList == NULL)
 	{
 		file->dataList = (char**)malloc(sizeof(char*) * file->line);
@@ -185,10 +188,11 @@ static char** JFileRead(JFilePtr file, int length)
 				break;
 			}
 
-			printf("%s\n", file->dataList[fileIndex]);
+			printf("%s", file->dataList[fileIndex]);
 		}
 	}
 
+	JFileClose(file);
 	return file->dataList;
 }
 
@@ -204,7 +208,6 @@ static void JFileGetLine(const JFilePtr file)
 	}
 
 	if(file->totalCharNum == 0) file->line = 0;
-
 	fclose(fp);
 }
 
@@ -212,6 +215,70 @@ static char* JFileGetName(JFilePtr file)
 {
 	if(file == NULL) return NULL;
 	return file->fileName;
+}
+
+static char* JFileGetPath(JFilePtr file)
+{
+	if(file == NULL) return NULL;
+	return file->filePath;
+}
+
+static char* JFileSetName(JFilePtr file, const char *fileName)
+{
+	if(fileName == NULL) return NULL;
+
+	if(file->fileName != NULL)
+	{
+		if(strncmp(JFileGetName(file), fileName, strlen(fileName)) == 0) return NULL;
+		else free(file->fileName);
+	}
+	if(file->filePath != NULL) free(file->filePath);
+
+	file->fileName = strdup(fileName); // malloc
+	if(file->fileName == NULL) return NULL;
+	file->fileName[strlen(file->fileName)] = '\0';
+
+	file->filePath = getcwd(NULL, BUF_SIZE); // NULL 을 매개변수로 하면, malloc 해서 반환
+	if(file->filePath == NULL)
+	{
+		free(file->fileName);
+		return NULL;
+	}
+	file->filePath[strlen(file->filePath)] = '\0';
+
+	if(strncat(file->filePath, "/", 1) == NULL) return NULL;
+	if(strncat(file->filePath, file->fileName, strlen(file->fileName)) == NULL) return NULL;
+
+	int pathLength = strlen(file->filePath);
+	char *newFilePath = realloc(file->filePath, pathLength);
+	if(newFilePath == NULL)
+	{
+		free(file);
+		free(file->fileName);
+		free(file->filePath);
+		return NULL;
+	}
+	file->filePath = newFilePath;
+
+	return file->fileName;
+}
+
+static char* JFileSetPath(JFilePtr file, const char *filePath)
+{
+	if(filePath == NULL) return NULL;
+
+	if(file->filePath != NULL) free(file->filePath);
+
+	file->filePath = strdup(filePath); // malloc
+	if(file->filePath == NULL) return NULL;
+	file->filePath[strlen(file->filePath)] = '\0';
+
+	return file->filePath;
+}
+
+static int JFileIncDupleNum(JFilePtr file)
+{
+	return ++(file->dupleNum);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -241,7 +308,18 @@ JFMPtr JFMNew()
 void JFMDelete(JFMPtrContainer fmContainer)
 {
 	if((fmContainer == NULL) || (*fmContainer == NULL)) return;
-	JFMDeleteAllFiles(*fmContainer);
+
+	if((*fmContainer)->fileContainer != NULL)
+	{
+		int fileIndex = 0;
+		int fmSize = (*fmContainer)->size;
+		for( ; fileIndex <= fmSize; fileIndex++)
+		{
+			JFileDelete(&(((*fmContainer)->fileContainer)[fileIndex]));
+		}
+		free((*fmContainer)->fileContainer);
+	}
+
 	free(*fmContainer);
 	*fmContainer = NULL;
 }
@@ -258,9 +336,9 @@ void* JFMGetUserData(JFMPtr fm)
 	return fm->userData;
 }
 
-JFMPtr JFMNewFile(JFMPtr fm, const char *fileName, const char *mode)
+JFMPtr JFMNewFile(JFMPtr fm, const char *fileName)
 {
-	if((fm == NULL) || (fileName == NULL) || (mode == NULL)) return NULL;
+	if((fm == NULL) || (fileName == NULL)) return NULL;
 
 	if(fm->fileContainer[fm->size] == NULL)
 	{
@@ -270,7 +348,7 @@ JFMPtr JFMNewFile(JFMPtr fm, const char *fileName, const char *mode)
 			if(JFMFindFileByName(fm, fileName) != NULL) return NULL;
 		}
 
-		JFilePtr newFile = JFileNew(fileName, mode);
+		JFilePtr newFile = JFileNew(fileName);
 		if(newFile == NULL) return NULL;
 
 		JFilePtrContainer newContainer = (JFilePtrContainer)realloc(fm->fileContainer, (fm->size + 1));
@@ -299,6 +377,7 @@ JFMPtr JFMDeleteFile(JFMPtr fm, int index)
 	{
 		JFileRemove(JFMGetFile(fm, index));
 		JFileDelete(&(fm->fileContainer[index]));
+		fm->fileContainer[index] = NULL;
 	}
 	else return NULL;
 
@@ -328,10 +407,16 @@ char* JFMGetFileName(JFMPtr fm, int index)
 	return JFileGetName(JFMGetFile(fm, index));
 }
 
-JFMPtr JFMWriteFile(JFMPtr fm, int index, const char *s)
+char* JFMGetFilePath(JFMPtr fm, int index)
+{
+	if((fm == NULL) || (index < 0) || (index >= fm->size)) return NULL;
+	return JFileGetPath(JFMGetFile(fm, index));
+}
+
+JFMPtr JFMWriteFile(JFMPtr fm, int index, const char *s, const char *mode)
 {
 	if((fm == NULL) || (index < 0) || (index >= fm->size) || (s == NULL)) return NULL;
-	if(JFileWrite(JFMGetFile(fm, index), s) == NULL) return NULL;
+	if(JFileWrite(JFMGetFile(fm, index), s, mode) == NULL) return NULL;
 	return fm;
 }
 
@@ -365,9 +450,53 @@ JFilePtr JFMGetFile(JFMPtr fm, int index)
 	return fm->fileContainer[index];
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/// Util Functions
-///////////////////////////////////////////////////////////////////////////////
+JFMPtr JFMMoveFile(JFMPtr fm, int index, const char *newFilePath)
+{
+	if((fm == NULL) || (index < 0) || (index >= fm->size) || (newFilePath == NULL)) return NULL;
 
+	// 목적지 경로에 복사 후 삭제
+	if(JFMCopyFile(fm, index, newFilePath) == NULL) return NULL;
+	JFileRemove(JFMGetFile(fm, index));
+	if(JFileSetPath(JFMGetFile(fm, index), newFilePath) == NULL) return NULL;
 
+	return fm;
+}
+
+JFMPtr JFMCopyFile(JFMPtr fm, int index, const char *newFilePath)
+{
+	if((fm == NULL) || (index < 0) || (index >= fm->size)) return NULL;
+
+	FILE *newFilePointer = NULL;
+	if(newFilePath == NULL)
+	{
+		char *oldFilePath = strdup(JFMGetFile(fm, index)->filePath);
+		char dupleBuf[BUF_SIZE];
+
+		sprintf(dupleBuf, "_%d", JFMGetFile(fm, index)->dupleNum + 1);
+		strcat(oldFilePath, dupleBuf);
+
+		newFilePointer = fopen(oldFilePath, "w");
+
+		free(oldFilePath);
+		JFileIncDupleNum(JFMGetFile(fm, index));
+	}
+	else newFilePointer = fopen(newFilePath, "w");
+	if(newFilePointer == NULL) return NULL;
+
+	if(JFileOpen(JFMGetFile(fm, index), "r") == NULL) return NULL;
+
+	char c = '\0';
+	FILE *oldFilePointer = JFMGetFile(fm, index)->filePointer;
+
+	while(1)
+	{
+		c = fgetc(oldFilePointer);
+		if(!feof(oldFilePointer)) fputc(c, newFilePointer);
+		else break;
+	}
+
+	fclose(newFilePointer);
+	JFileClose(JFMGetFile(fm, index));
+	return fm;
+}
 
