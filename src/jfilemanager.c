@@ -7,6 +7,26 @@
 #include "../include/jfilemanager.h"
 
 ///////////////////////////////////////////////////////////////////////////////
+/// Static Definitions
+///////////////////////////////////////////////////////////////////////////////
+
+#define MAX_MODE_NUM 9
+
+typedef enum Category
+{
+	Owner,
+	Group,
+	Other
+} Category;
+
+typedef enum Permission
+{
+	Read,
+	Write,
+	Execute
+} Permission;
+
+///////////////////////////////////////////////////////////////////////////////
 /// Predefinitions of Static Functions for JFile
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -26,6 +46,7 @@ static char* JFileSetName(JFilePtr file, const char *newFileName);
 static char* JFileSetPath(JFilePtr file, const char *newFilePath);
 static int JFileIncDupleNum(JFilePtr file);
 static long long JFileGetSize(JFilePtr file);
+static char* JFileGetMode(JFilePtr file);
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Predefinitions of Static Functions for JFile
@@ -35,10 +56,11 @@ static Bool JFMCheckIndex(JFMPtr fm, int index);
 static FileType JFMCheckFileType(JFMPtr fm, int index);
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Static Util Function
+/// Static Util Functions
 ///////////////////////////////////////////////////////////////////////////////
 
 static Bool _CheckIfPath(const char *s);
+static void _ConvertModeToString(char *s, mode_t mode);
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Static Functions for JFile
@@ -53,6 +75,7 @@ static JFilePtr JFileNew(const char *name)
 	file->path = NULL;
 	file->filePointer = NULL;
 	file->dataList = NULL;
+	file->mode = NULL;
 	file->dupleNum = 0;
 	file->line = 0;
 	file->totalCharCount = 0;
@@ -77,6 +100,7 @@ static void JFileDelete(JFilePtrContainer fileContainer)
 	if((fileContainer == NULL) || (*fileContainer == NULL)) return;
 	if((*fileContainer)->name != NULL) free((*fileContainer)->name);
 	if((*fileContainer)->path != NULL) free((*fileContainer)->path);
+	if((*fileContainer)->mode != NULL) free((*fileContainer)->mode);
 	if((*fileContainer)->filePointer != NULL) fclose((*fileContainer)->filePointer);
 
 	if((*fileContainer)->dataList != NULL)
@@ -120,6 +144,9 @@ static JFilePtr JFileLoad(JFilePtr file)
 
 	// 파일 라인 수 및 전체 문자 개수 카운트
 	JFileGetLine(file);
+
+	// 파일 모드를 문자열로 저장
+	if(JFileGetMode(file) == NULL) return NULL;
 
 	return file;
 }
@@ -238,7 +265,7 @@ static void JFileGetLine(const JFilePtr file)
 	file->line = 1;
 	while((c = fgetc(fp)) != EOF)
 	{
-		//TODO 개행 문자 다음 문자가 널문자가 아니면 줄 하나 증가
+		//개행 문자 다음 문자가 널문자가 아니면 줄 하나 증가
 		if(c == '\n')
 		{
 			if((c = fgetc(fp)) == EOF) break;
@@ -327,6 +354,17 @@ static char* JFileSetPath(JFilePtr file, const char *path)
 static int JFileIncDupleNum(JFilePtr file)
 {
 	return ++(file->dupleNum);
+}
+
+static char* JFileGetMode(JFilePtr file)
+{
+	if(file->mode == NULL)
+	{
+		file->mode = (char*)malloc(sizeof(char) * (MAX_MODE_NUM + 1));
+		if(file->mode == NULL) return NULL;
+	}
+	_ConvertModeToString(file->mode, file->stat.st_mode);
+	return file->mode;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -564,7 +602,11 @@ JFMPtr JFMRenameFile(JFMPtr fm, int index, const char *newFileName)
 
 	JFilePtr file = JFMGetFile(fm, index);
 	if(file == NULL) return NULL;
-	if(JFileSetName(file, newFileName) == NULL) return NULL;
+
+	char *oldFilePath = strdup(file->path);
+	if(JFileSetName(file, newFileName) == NULL) fm = NULL;
+	if(rename(oldFilePath, file->path) == -1) fm = NULL;
+	free(oldFilePath);
 
 	return fm;
 }
@@ -612,6 +654,31 @@ JFMPtr JFMTruncateFile(JFMPtr fm, int index, off_t length)
 	return fm;
 }
 
+JFMPtr JFMChangeModeByNumber(JFMPtr fm, int index, const char *mode)
+{
+	if((fm == NULL) || (JFMCheckIndex(fm, index) == False) || (strlen(mode) != 4)) return NULL;
+
+	JFilePtr file = JFMGetFile(fm, index);
+	if(file == NULL) return NULL;
+
+	int _mode = strtol(mode, 0, 8);
+
+	if(chmod(file->path, _mode) == -1) return NULL;
+	if(JFileLoad(file) == NULL) return NULL;
+
+	return fm;
+}
+
+char* JFMGetFileMode(JFMPtr fm, int index)
+{
+	if((fm == NULL) || (JFMCheckIndex(fm, index) == False)) return NULL;
+
+	JFilePtr file = JFMGetFile(fm, index);
+	if(file == NULL) return NULL;
+
+	return JFileGetMode(file);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Static Functions for JFileManager
 ///////////////////////////////////////////////////////////////////////////////
@@ -654,5 +721,18 @@ static Bool _CheckIfPath(const char *s)
 	}
 
 	return False;
+}
+
+static void _ConvertModeToString(char *s, mode_t mode)
+{
+	const char basePermissions[MAX_MODE_NUM] = "rwxrwxrwx";
+	int modeIndex = 0;
+
+	for( ; modeIndex < MAX_MODE_NUM; modeIndex++)
+	{
+		s[modeIndex] = (mode & (1 << (MAX_MODE_NUM - modeIndex - 1))) ? basePermissions[modeIndex] : '-';
+	}
+
+	s[MAX_MODE_NUM] = '\0';
 }
 

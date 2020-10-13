@@ -134,6 +134,31 @@ TEST(FileManager, GetFileSize, {
 	JFMDelete(&fm);
 })
 
+TEST(FileManager, GetFileMode, {
+	char *expected1 = "Hello world!\n";
+	char *fileName = "fm_test.txt";
+	char *expectedMode = "rw-rw-r--";
+	JFMPtr fm = JFMNew();
+
+	// 정상 동작
+	JFMNewFile(fm, fileName);
+
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "w"));
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
+
+	EXPECT_NOT_NULL(JFMGetFileMode(fm, 0));
+	EXPECT_STR_EQUAL(JFMGetFileMode(fm, 0), expectedMode);
+
+	EXPECT_NULL(JFMGetFileMode(fm, 1));
+	EXPECT_NULL(JFMGetFileMode(NULL, 0));
+	EXPECT_NULL(JFMGetFileMode(NULL, 1));
+	EXPECT_NULL(JFMGetFileMode(NULL, -1));
+
+	JFMDeleteFile(fm, 0);
+	JFMDelete(&fm);
+})
+
 TEST(FileManager, WriteAndReadFile, {
 	char *expected1 = "Hello world!\n";
 	char *expected2 = "124 1234y* (*ll2215 asdjfi3\t123\n";
@@ -209,11 +234,64 @@ TEST(FileManager, TruncateFile, {
 	EXPECT_NOT_NULL(JFMTruncateFile(fm, 0, fileSize));
 	EXPECT_NUM_EQUAL(JFMGetFileSize(fm, 0), fileSize, longlong);
 
+	EXPECT_NULL(JFMTruncateFile(NULL, 0, fileSize));
+	EXPECT_NULL(JFMTruncateFile(fm, -1, fileSize));
+	EXPECT_NULL(JFMTruncateFile(fm, 0, -1));
+	EXPECT_NULL(JFMTruncateFile(NULL, -1, -1));
+
 	JFMDeleteFile(fm, 0);
 	JFMDelete(&fm);
 })
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+TEST(FileManager, RenameFile, {
+	char *expected1 = "Hello world!\n";
+	char *fileName1 = "fm_test1.txt";
+	char *fileName2 = "fm_test2.txt";
+
+	JFMPtr fm = JFMNew();
+	JFMNewFile(fm, fileName1);
+
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "w"));
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
+
+	EXPECT_NOT_NULL(JFMRenameFile(fm, 0, fileName2));
+	EXPECT_STR_EQUAL(JFMGetFileName(fm, 0), fileName2);
+
+	EXPECT_NULL(JFMRenameFile(NULL, 0, fileName2));
+	EXPECT_NULL(JFMRenameFile(fm, -1, fileName2));
+	EXPECT_NULL(JFMRenameFile(fm, 0, NULL));
+	EXPECT_NULL(JFMRenameFile(NULL, -1, NULL));
+
+	JFMDeleteFile(fm, 0);
+	JFMDelete(&fm);
+})
+
+TEST(FileManager, ChangeModeByNumber, {
+	char *expected1 = "Hello world!\n";
+	char *fileName = "fm_test.txt";
+	char *expectedModeString = "rw-rw-rw-";
+	char *expectedMode = "0666";
+
+	JFMPtr fm = JFMNew();
+	JFMNewFile(fm, fileName);
+
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "w"));
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
+
+	EXPECT_NOT_NULL(JFMChangeModeByNumber(fm, 0, expectedMode));
+	EXPECT_STR_EQUAL(JFMGetFileMode(fm, 0), expectedModeString);
+
+	EXPECT_NULL(JFMChangeModeByNumber(NULL, 0, expectedMode));
+	EXPECT_NULL(JFMChangeModeByNumber(fm, -1, expectedMode));
+	EXPECT_NULL(JFMChangeModeByNumber(NULL, -1, expectedMode));
+
+	JFMDeleteFile(fm, 0);
+	JFMDelete(&fm);
+})
+
+////////////////////////////////////////////////////////////////////////////////
 /// Main Function
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -229,10 +307,13 @@ int main()
 		Test_FileManager_GetFileName,
 		Test_FileManager_GetFilePath,
 		Test_FileManager_GetFileSize,
+		Test_FileManager_GetFileMode,
 		Test_FileManager_WriteAndReadFile,
 //		Test_FileManager_CopyFile,
 		Test_FileManager_MoveFile,
-		Test_FileManager_TruncateFile
+		Test_FileManager_TruncateFile,
+		Test_FileManager_RenameFile,
+		Test_FileManager_ChangeModeByNumber
     );
 
     RUN_ALL_TESTS();

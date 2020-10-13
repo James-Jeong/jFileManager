@@ -31,7 +31,7 @@ typedef enum FileType
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef BUF_SIZE
-#define BUF_SIZE 512
+#define BUF_SIZE 1024
 #endif
 
 #ifndef LINE_LENGTH
@@ -58,6 +58,8 @@ typedef struct _jfile_t
 	char *name;
 	// 경로
 	char *path;
+	// 접근 권한(문자열)
+	char *mode;
 	// 전체 문자열 배열(개행으로 구분)
 	char **dataList;
 	// 파일 상태 및 정보
@@ -85,6 +87,7 @@ void* JFMSetUserData(JFMPtr fm, void *userData);
 void* JFMGetUserData(JFMPtr fm);
 char* JFMGetFileName(JFMPtr fm, int index);
 char* JFMGetFilePath(JFMPtr fm, int index);
+char* JFMGetFileMode(JFMPtr fm, int index);
 long long JFMGetFileSize(JFMPtr fm, int index);
 
 // 파일 불러오기(없으면 새로 만들기), 삭제하기
@@ -110,10 +113,10 @@ JFMPtr JFMMoveFile(JFMPtr fm, int index, const char *destPath);
 // 파일 크기 변경
 JFMPtr JFMTruncateFile(JFMPtr fm, int index, off_t length);
 
-// 파일 권한 바꾸기
+// 파일 접근 권한 바꾸기
+JFMPtr JFMChangeModeByNumber(JFMPtr fm, int index, const char *mode);
 
-
-// 파일 상태 및 정보 출력void JFMPrintFile(JFMPtr fm, int index);
+// 파일 상태 및 정보 출력
 void JFMPrintFile(JFMPtr fm, int index);
 
 #endif // #ifndef __JFILEMANAGER_H__
