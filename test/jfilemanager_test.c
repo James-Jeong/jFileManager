@@ -27,7 +27,7 @@ TEST(FileManager, SetAndGetUserData, {
 
 	EXPECT_NOT_NULL(JFMSetUserData(fm, &expected1));
 	EXPECT_PTR_EQUAL(JFMGetUserData(fm), &expected1);
-	EXPECT_NUM_EQUAL(*((int*)(JFMGetUserData(fm))), expected1);
+	EXPECT_NUM_EQUAL(*((int*)(JFMGetUserData(fm))), expected1, int);
 
 	EXPECT_NULL(JFMSetUserData(NULL, &expected1));
 	EXPECT_NULL(JFMSetUserData(fm, NULL));
@@ -40,12 +40,19 @@ TEST(FileManager, SetAndGetUserData, {
 
 TEST(FileManager, CreateAndDeleteFile, {
 	char *fileName = "fm_test.txt";
+//	char *filePath = "/home/dev1/src_test/jFileManager/test/fm_test.txt";
 	JFMPtr fm = JFMNew();
 
 	// 정상 동작
 	EXPECT_NOT_NULL(JFMNewFile(fm, fileName));
 	// 같은 파일 이름으로 재호출 시 NULL 반환
 	EXPECT_NULL(JFMNewFile(fm, fileName));
+	//TODO 파일 이름이 아닌 경로를 매개변수로 사용하면 이름을 파싱하고 경로를 저장
+//	EXPECT_NOT_NULL(JFMNewFile(fm, filePath));
+	// NULL 입력 시, NULL 반환
+	EXPECT_NULL(JFMNewFile(NULL, fileName));
+	EXPECT_NULL(JFMNewFile(fm, NULL));
+	EXPECT_NULL(JFMNewFile(NULL, NULL));
 
 	// 정상 동작
 	EXPECT_NOT_NULL(JFMDeleteFile(fm, 0));
@@ -103,8 +110,33 @@ TEST(FileManager, GetFilePath, {
 	JFMDelete(&fm);
 })
 
+TEST(FileManager, GetFileSize, {
+	char *expected1 = "Hello world!\n";
+	char *fileName = "fm_test.txt";
+	long long fileSize = 39;
+	JFMPtr fm = JFMNew();
+
+	// 정상 동작
+	JFMNewFile(fm, fileName);
+
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "w"));
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
+
+	EXPECT_NUM_EQUAL(JFMGetFileSize(fm, 0), fileSize, longlong);
+
+	EXPECT_NUM_EQUAL(JFMGetFileSize(NULL, 0), -1, longlong);
+	EXPECT_NUM_EQUAL(JFMGetFileSize(fm, 1), -1, longlong);
+	EXPECT_NUM_EQUAL(JFMGetFileSize(fm, -1), -1, longlong);
+	EXPECT_NUM_EQUAL(JFMGetFileSize(NULL, 1), -1, longlong);
+
+	JFMDeleteFile(fm, 0);
+	JFMDelete(&fm);
+})
+
 TEST(FileManager, WriteAndReadFile, {
 	char *expected1 = "Hello world!\n";
+	char *expected2 = "124 1234y* (*ll2215 asdjfi3\t123\n";
 	char *fileName = "fm_test.txt";
 
 	JFMPtr fm = JFMNew();
@@ -113,11 +145,13 @@ TEST(FileManager, WriteAndReadFile, {
 	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "w"));
 	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
 	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected2, "a"));
 
 	char **dataList = JFMReadFile(fm, 0);
 	EXPECT_STR_EQUAL(dataList[0], expected1);
 	EXPECT_STR_EQUAL(dataList[1], expected1);
 	EXPECT_STR_EQUAL(dataList[2], expected1);
+	EXPECT_STR_EQUAL(dataList[3], expected2);
 
 	JFMDeleteFile(fm, 0);
 	JFMDelete(&fm);
@@ -161,6 +195,24 @@ TEST(FileManager, MoveFile, {
 	JFMDelete(&fm);
 })
 
+TEST(FileManager, TruncateFile, {
+	char *expected1 = "Hello world!\n";
+	char *fileName = "fm_test.txt";
+	off_t fileSize = 1000;
+
+	JFMPtr fm = JFMNew();
+	JFMNewFile(fm, fileName);
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "w"));
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
+	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
+
+	EXPECT_NOT_NULL(JFMTruncateFile(fm, 0, fileSize));
+	EXPECT_NUM_EQUAL(JFMGetFileSize(fm, 0), fileSize, longlong);
+
+	JFMDeleteFile(fm, 0);
+	JFMDelete(&fm);
+})
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Main Function
 ////////////////////////////////////////////////////////////////////////////////
@@ -176,9 +228,11 @@ int main()
 		Test_FileManager_CreateAndDeleteFile,
 		Test_FileManager_GetFileName,
 		Test_FileManager_GetFilePath,
+		Test_FileManager_GetFileSize,
 		Test_FileManager_WriteAndReadFile,
 //		Test_FileManager_CopyFile,
-		Test_FileManager_MoveFile
+		Test_FileManager_MoveFile,
+		Test_FileManager_TruncateFile
     );
 
     RUN_ALL_TESTS();
