@@ -12,7 +12,7 @@
 
 static JFilePtr JFileNew(const char *name);
 static void JFileDelete(JFilePtrContainer fileContainer);
-static void JFileClear(JFilePtr file);
+static void JFileDataListClear(JFilePtr file);
 static JFilePtr JFileLoad(JFilePtr file);
 static void JFileRemove(JFilePtr file);
 static JFilePtr JFileWrite(JFilePtr file, const char *s, const char *mode);
@@ -89,6 +89,7 @@ static void JFileDelete(JFilePtrContainer fileContainer)
 				free(((*fileContainer)->dataList)[dataListIndex]);
 			}
 		}
+		free((*fileContainer)->dataList);
 	}
 
 	free(*fileContainer);
@@ -162,7 +163,7 @@ static JFilePtr JFileWrite(JFilePtr file, const char *s, const char *mode)
 	return file;
 }
 
-static void JFileClear(JFilePtr file)
+static void JFileDataListClear(JFilePtr file)
 {
 	if((file == NULL) || (file->dataList == NULL)) return;
 
@@ -175,9 +176,6 @@ static void JFileClear(JFilePtr file)
 			file->dataList[fileIndex] = NULL;
 		}
 	}
-
-	file->line = 0;
-	file->totalCharCount = 0;
 }
 
 static char** JFileRead(JFilePtr file, int length)
@@ -195,7 +193,7 @@ static char** JFileRead(JFilePtr file, int length)
 			file->dataList[fileIndex] = NULL;
 		}
 	}
-	else JFileClear(file);
+	else JFileDataListClear(file);
 
 	for(fileIndex = 0; fileIndex < file->line; fileIndex++)
 	{
@@ -204,14 +202,14 @@ static char** JFileRead(JFilePtr file, int length)
 			file->dataList[fileIndex] = (char*)malloc(sizeof(char) * length);
 			if(file->dataList[fileIndex] == NULL)
 			{
-				JFileClear(file);
+				JFileDataListClear(file);
 				break;
 			}
 
 			char *s = fgets(file->dataList[fileIndex], length, file->filePointer);
 			if(s == NULL)
 			{
-				JFileClear(file);
+				JFileDataListClear(file);
 				break;
 			}
 
@@ -219,7 +217,7 @@ static char** JFileRead(JFilePtr file, int length)
 			char *newData = (char*)realloc(file->dataList[fileIndex], dataLength + 1);
 			if(newData == NULL)
 			{
-				JFileClear(file);
+				JFileDataListClear(file);
 				break;
 			}
 			newData[dataLength] = '\0';
@@ -235,6 +233,7 @@ static void JFileGetLine(const JFilePtr file)
 {
 	char c = '\0';
 	FILE *fp = fopen(file->path, "r");
+	if(fp == NULL) return;
 
 	file->line = 1;
 	while((c = fgetc(fp)) != EOF)
