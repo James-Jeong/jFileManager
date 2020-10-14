@@ -311,7 +311,11 @@ static char** JFileRead(JFilePtr file, int length)
 	if((file == NULL) || (file->line <= 0) || (length <= 0)) return NULL;
 
 	if(JFileOpen(file, "r") == NULL) return NULL;
-	if(JFileNewDataList(file) == NULL) return NULL;
+	if(JFileNewDataList(file) == NULL)
+	{
+		JFileClose(file);
+		return NULL;
+	}
 
 	int fileIndex = 0;
 	for( ; fileIndex < file->line; fileIndex++)
