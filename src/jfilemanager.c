@@ -4,6 +4,7 @@
 #include <time.h>
 #include <errno.h>
 #include <sys/types.h>
+#include <limits.h>
 #include "../include/jfilemanager.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -80,6 +81,7 @@ static int JFMFindEmptyFileIndex(JFMPtr fm);
 
 static Bool _CheckIfPath(const char *s);
 static void _ConvertModeToString(char *s, mode_t mode);
+static Bool _CheckIfStringIsDigits(const char *s);
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Static Functions for JFile
@@ -954,21 +956,27 @@ JFMPtr JFMTruncateFile(JFMPtr fm, int index, off_t length)
 }
 
 /*
- * @fn JFMPtr JFMChangeModeByNumber(JFMPtr fm, int index, const char *mode)
+ * @fn JFMPtr JFMChangeMode(JFMPtr fm, int index, const char *mode)
  * @brief 지정한 파일의 접근 방식을 새로 설정하는 함수
  * @param fm 파일 관리 구조체의 주소(출력)
  * @param index 파일의 인덱스 번호(입력)
  * @param mode 새로 설정할 파일 접근 방식(입력, 읽기 전용)
  * @return 성공 시 파일 관리 구조체의 주소, 실패 시 NULL 반환
  */
-JFMPtr JFMChangeModeByNumber(JFMPtr fm, int index, const char *mode)
+JFMPtr JFMChangeMode(JFMPtr fm, int index, const char *mode)
 {
 	if((fm == NULL) || (JFMCheckIndex(fm, index) == False) || (strlen(mode) != 4)) return NULL;
+	if(_CheckIfStringIsDigits(mode) == False) return NULL;
 
 	JFilePtr file = JFMGetFile(fm, index);
 	if(file == NULL) return NULL;
 
-	int _mode = strtol(mode, 0, 8);
+	long _mode = strtol(mode, 0, 8);
+	if((_mode == 0) || (_mode == LONG_MIN) || (_mode == LONG_MAX))
+	{
+		perror("strtol");
+		return NULL;
+	}
 
 	if(chmod(file->path, _mode) == -1) return NULL;
 	if(JFileLoad(file) == NULL) return NULL;
@@ -1091,5 +1099,24 @@ static void _ConvertModeToString(char *s, mode_t mode)
 	}
 
 	s[MAX_MODE_NUM] = '\0';
+}
+
+/*
+ * @fn static Bool _CheckIfStringIsDigits(const char *s)
+ * @brief 지정한 문자열이 숫자 문자들로 구성되어 있는지 검사하는 함수
+ * @param s 검사할 문자열(입력, 읽기 전용)
+ * @return 성공 시 True, 실패 시 False 반환(Bool 열거형 참고)
+ */
+static Bool _CheckIfStringIsDigits(const char *s)
+{
+	int sLength = strlen(s);
+	int sIndex = 0;
+
+	for( ; sIndex < sLength; sIndex++)
+	{
+		if(isdigit(s[sIndex]) == 0) return False;
+	}
+
+	return True;
 }
 

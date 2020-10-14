@@ -92,7 +92,7 @@ JFMPtr JFMMoveFile(JFMPtr fm, int index, const char *destPath);
 JFMPtr JFMTruncateFile(JFMPtr fm, int index, off_t length);
 
 // 파일 접근 권한 바꾸기
-JFMPtr JFMChangeModeByNumber(JFMPtr fm, int index, const char *mode);
+JFMPtr JFMChangeMode(JFMPtr fm, int index, const char *mode);
 
 // 파일 상태 및 정보 출력
 void JFMPrintFile(JFMPtr fm, int index);

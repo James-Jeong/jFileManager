@@ -267,7 +267,7 @@ TEST(FileManager, RenameFile, {
 	JFMDelete(&fm);
 })
 
-TEST(FileManager, ChangeModeByNumber, {
+TEST(FileManager, ChangeMode, {
 	char *expected1 = "Hello world!\n";
 	char *fileName = "fm_test.txt";
 	char *expectedModeString = "rw-rw-rw-";
@@ -280,12 +280,16 @@ TEST(FileManager, ChangeModeByNumber, {
 	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
 	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
 
-	EXPECT_NOT_NULL(JFMChangeModeByNumber(fm, 0, expectedMode));
+	EXPECT_NOT_NULL(JFMChangeMode(fm, 0, expectedMode));
 	EXPECT_STR_EQUAL(JFMGetFileMode(fm, 0), expectedModeString);
 
-	EXPECT_NULL(JFMChangeModeByNumber(NULL, 0, expectedMode));
-	EXPECT_NULL(JFMChangeModeByNumber(fm, -1, expectedMode));
-	EXPECT_NULL(JFMChangeModeByNumber(NULL, -1, expectedMode));
+	EXPECT_NULL(JFMChangeMode(fm, 0, "abcc"));
+	EXPECT_NULL(JFMChangeMode(fm, 0, "011*"));
+	EXPECT_NULL(JFMChangeMode(fm, 0, "0000"));
+	EXPECT_NULL(JFMChangeMode(fm, 0, "0888"));
+	EXPECT_NULL(JFMChangeMode(NULL, 0, expectedMode));
+	EXPECT_NULL(JFMChangeMode(fm, -1, expectedMode));
+	EXPECT_NULL(JFMChangeMode(NULL, -1, expectedMode));
 
 	JFMDeleteFile(fm, 0);
 	JFMDelete(&fm);
@@ -329,7 +333,7 @@ int main()
 		Test_FileManager_MoveFile,
 		Test_FileManager_TruncateFile,
 		Test_FileManager_RenameFile,
-		Test_FileManager_ChangeModeByNumber,
+		Test_FileManager_ChangeMode,
 		Test_FileManager_FindFileByName
     );
 
