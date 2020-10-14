@@ -889,10 +889,8 @@ JFMPtr JFMRenameFile(JFMPtr fm, int index, const char *newFileName)
 	JFilePtr file = JFMGetFile(fm, index);
 	if(file == NULL) return NULL;
 
-	char *oldFilePath = strdup(file->path);
+	if(rename(file->path, newFileName) == -1) fm = NULL;
 	if(JFileSetName(file, newFileName) == NULL) fm = NULL;
-	if(rename(oldFilePath, file->path) == -1) fm = NULL;
-	free(oldFilePath);
 
 	return fm;
 }
@@ -946,7 +944,7 @@ JFMPtr JFMTruncateFile(JFMPtr fm, int index, off_t length)
 
 	if(truncate(file->path, length) == -1)
 	{
-		perror("truncate");
+//		perror("truncate");
 		return NULL;
 	}
 
@@ -974,7 +972,7 @@ JFMPtr JFMChangeMode(JFMPtr fm, int index, const char *mode)
 	long _mode = strtol(mode, 0, 8);
 	if((_mode == 0) || (_mode == LONG_MIN) || (_mode == LONG_MAX))
 	{
-		perror("strtol");
+//		perror("strtol");
 		return NULL;
 	}
 
