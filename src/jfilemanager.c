@@ -66,6 +66,7 @@ static void JFileClose(const JFilePtr file);
 static char* JFileSetName(JFilePtr file, const char *newFileName);
 static char* JFileSetPath(JFilePtr file, const char *newFilePath);
 static int JFileIncDupleNum(JFilePtr file);
+static char** JFileNewDataList(JFilePtr file);
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Predefinitions of Static Functions for JFile
@@ -177,7 +178,7 @@ static JFilePtr JFileLoad(JFilePtr file)
 	// 파일 상태 및 정보 수집
 	if(stat(file->path, &(file->stat)) < 0)
 	{
-		perror("stat");
+//		perror("stat");
 		return NULL;
 	}
 
@@ -262,8 +263,6 @@ static JFilePtr JFileWrite(JFilePtr file, const char *s, const char *mode)
  */
 static void JFileDataListClear(JFilePtr file)
 {
-	if((file == NULL) || (file->dataList == NULL)) return;
-
 	int fileIndex = 0;
 	for( ; fileIndex < file->line; fileIndex++)
 	{
@@ -276,6 +275,31 @@ static void JFileDataListClear(JFilePtr file)
 }
 
 /*
+ * @fn static char** JFileNewDataList(JFMPtr fm)
+ * @brief 파일 내용을 저장할 문자열 배열을 새로 생성하는 함수
+ * @param file 파일 정보 관리 구조체의 주소(출력)
+ * @return 성공 시 문자열 배열의 주소, 실패 시 NULL 반환
+ */
+static char** JFileNewDataList(JFilePtr file)
+{
+	if(file->dataList == NULL)
+	{
+		int dataListSize = file->line;
+		file->dataList = (char**)malloc(sizeof(char*) * dataListSize);
+		if(file->dataList == NULL) return NULL;
+
+		int fileIndex = 0;
+		for( ; fileIndex < dataListSize; fileIndex++)
+		{
+			file->dataList[fileIndex] = NULL;
+		}
+	}
+	else JFileDataListClear(file);
+
+	return file->dataList;
+}
+
+/*
  * @fn static char** JFileRead(JFilePtr file, int length)
  * @brief 지정한 파일의 전체 내용을 파일 관리 구조체에 저장하는 함수
  * @param file 파일 정보 관리 구조체의 주소(출력)
@@ -285,21 +309,12 @@ static void JFileDataListClear(JFilePtr file)
 static char** JFileRead(JFilePtr file, int length)
 {
 	if((file == NULL) || (file->line <= 0) || (length <= 0)) return NULL;
+
 	if(JFileOpen(file, "r") == NULL) return NULL;
+	if(JFileNewDataList(file) == NULL) return NULL;
 
 	int fileIndex = 0;
-	if(file->dataList == NULL)
-	{
-		file->dataList = (char**)malloc(sizeof(char*) * file->line);
-		if(file->dataList == NULL) return NULL;
-		for( ; fileIndex < file->line; fileIndex++)
-		{
-			file->dataList[fileIndex] = NULL;
-		}
-	}
-	else JFileDataListClear(file);
-
-	for(fileIndex = 0; fileIndex < file->line; fileIndex++)
+	for( ; fileIndex < file->line; fileIndex++)
 	{
 		if(file->dataList[fileIndex] == NULL)
 		{
