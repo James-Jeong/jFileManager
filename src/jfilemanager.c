@@ -72,9 +72,9 @@ static char** JFileNewDataList(JFilePtr file);
 /// Predefinitions of Static Functions for JFile
 ///////////////////////////////////////////////////////////////////////////////
 
-static Bool JFMCheckIndex(JFMPtr fm, int index);
-static FileType JFMCheckFileType(JFMPtr fm, int index);
-static int JFMFindEmptyFileIndex(JFMPtr fm);
+static Bool JFMCheckIndex(const JFMPtr fm, int index);
+static FileType JFMCheckFileType(const JFMPtr fm, int index);
+static int JFMFindEmptyFileIndex(const JFMPtr fm);
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Static Util Functions
@@ -376,7 +376,8 @@ static void JFileGetLine(const JFilePtr file)
 		(file->totalCharCount)++;
 	}
 
-	if((file->totalCharCount > 0) && (file->line == 0)) file->line = 1;
+	// 아무 내용도 없을 때 line 수를 0 으로 설정
+	if((file->totalCharCount == 0) && (file->line == 1)) file->line = 0;
 	fclose(fp);
 }
 
@@ -915,13 +916,13 @@ JFMPtr JFMRenameFile(JFMPtr fm, int index, const char *newFileName)
 }
 
 /*
- * @fn void JFMPrintFile(JFMPtr fm, int index)
+ * @fn void JFMPrintFile(const JFMPtr fm, int index)
  * @brief 지정한 파일의 상태 및 정보를 출력하는 함수
- * @param fm 파일 관리 구조체의 주소(출력)
+ * @param fm 파일 관리 구조체의 주소(입력, 읽기 전용)
  * @param index 파일의 인덱스 번호(입력)
  * @return 반환값 없음
  */
-void JFMPrintFile(JFMPtr fm, int index)
+void JFMPrintFile(const JFMPtr fm, int index)
 {
 	if((fm == NULL) || (JFMCheckIndex(fm, index) == False)) return;
 
@@ -1023,26 +1024,26 @@ char* JFMGetFileMode(JFMPtr fm, int index)
 ///////////////////////////////////////////////////////////////////////////////
 
 /*
- * @fn static Bool JFMCheckIndex(JFMPtr fm, int index)
+ * @fn static Bool JFMCheckIndex(const JFMPtr fm, int index)
  * @brief 지정한 인덱스의 경계를 검사하는 함수
  * @param fm 파일 관리 구조체의 주소(출력)
  * @param index 파일의 인덱스 번호(입력)
  * @return 성공 시 True, 실패 시 False 반환(Bool 열거형 참고)
  */
-static Bool JFMCheckIndex(JFMPtr fm, int index)
+static Bool JFMCheckIndex(const JFMPtr fm, int index)
 {
 	if((index < 0) || (index >= fm->size)) return False;
 	return True;
 }
 
 /*
- * @fn static FileType JFMCheckFileType(JFMPtr fm, int index)
+ * @fn static FileType JFMCheckFileType(const JFMPtr fm, int index)
  * @brief 지정한 파일 유형을 검사하는 함수
  * @param fm 파일 관리 구조체의 주소(출력)
  * @param index 파일의 인덱스 번호(입력)
  * @return 성공 시 파일 유형, 실패 시 Unknown 반환(FileType 열거형 참고)
  */
-static FileType JFMCheckFileType(JFMPtr fm, int index)
+static FileType JFMCheckFileType(const JFMPtr fm, int index)
 {
 	JFilePtr file = JFMGetFile(fm, index);
 	if(file == NULL) return;
@@ -1061,12 +1062,12 @@ static FileType JFMCheckFileType(JFMPtr fm, int index)
 }
 
 /*
- * @fn static int JFMFindEmptyFileIndex(JFMPtr fm)
+ * @fn static int JFMFindEmptyFileIndex(const JFMPtr fm)
  * @brief 비어있는 파일 인덱스를 반환하는 함수
  * @param fm 파일 관리 구조체의 주소(출력)
  * @return 성공 시 파일 인덱스, 실패 시 -1 반환
  */
-static int JFMFindEmptyFileIndex(JFMPtr fm)
+static int JFMFindEmptyFileIndex(const JFMPtr fm)
 {
 	int fileIndex = 0;
 	for( ; fileIndex < fm->size; fileIndex++)

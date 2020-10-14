@@ -95,7 +95,7 @@ JFMPtr JFMTruncateFile(JFMPtr fm, int index, off_t length);
 JFMPtr JFMChangeMode(JFMPtr fm, int index, const char *mode);
 
 // 파일 상태 및 정보 출력
-void JFMPrintFile(JFMPtr fm, int index);
+void JFMPrintFile(const JFMPtr fm, int index);
 
 #endif // #ifndef __JFILEMANAGER_H__
 

@@ -280,6 +280,8 @@ TEST(FileManager, ChangeMode, {
 	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
 	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
 
+	JFMPrintFile(fm, 0);
+
 	EXPECT_NOT_NULL(JFMChangeMode(fm, 0, expectedMode));
 	EXPECT_STR_EQUAL(JFMGetFileMode(fm, 0), expectedModeString);
 
