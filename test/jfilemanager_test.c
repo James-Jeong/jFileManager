@@ -291,6 +291,22 @@ TEST(FileManager, ChangeModeByNumber, {
 	JFMDelete(&fm);
 })
 
+TEST(FileManager, FindFileByName, {
+	char *fileName = "fm_test.txt";
+	JFMPtr fm = JFMNew();
+	JFMNewFile(fm, fileName);
+
+	EXPECT_NOT_NULL(JFMFindFileByName(fm, "fm_test.txt"));
+
+	EXPECT_NULL(JFMFindFileByName(fm, "abc.txt"));
+	EXPECT_NULL(JFMFindFileByName(fm, NULL));
+	EXPECT_NULL(JFMFindFileByName(NULL, "fm_test.txt"));
+	EXPECT_NULL(JFMFindFileByName(NULL, NULL));
+
+	JFMDeleteFile(fm, 0);
+	JFMDelete(&fm);
+})
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Main Function
 ////////////////////////////////////////////////////////////////////////////////
@@ -313,7 +329,8 @@ int main()
 		Test_FileManager_MoveFile,
 		Test_FileManager_TruncateFile,
 		Test_FileManager_RenameFile,
-		Test_FileManager_ChangeModeByNumber
+		Test_FileManager_ChangeModeByNumber,
+		Test_FileManager_FindFileByName
     );
 
     RUN_ALL_TESTS();

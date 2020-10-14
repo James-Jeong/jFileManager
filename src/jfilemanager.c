@@ -26,6 +26,24 @@ typedef enum Permission
 	Execute
 } Permission;
 
+typedef enum Bool
+{
+	False = -1,
+	True = 1
+} Bool;
+
+typedef enum FileType
+{
+	Unknown = -1,
+	Directory = 1,
+	Regular,
+	CharDevice,
+	BlockDevice,
+	Pipe,
+	Socket,
+	SymbolicLink
+} FileType;
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Predefinitions of Static Functions for JFile
 ///////////////////////////////////////////////////////////////////////////////
@@ -38,15 +56,15 @@ static void JFileRemove(JFilePtr file);
 static JFilePtr JFileWrite(JFilePtr file, const char *s, const char *mode);
 static char** JFileRead(JFilePtr file, int length);
 static void JFileGetLine(const JFilePtr file);
-static char* JFileGetName(JFilePtr file);
-static char* JFileGetPath(JFilePtr file);
+static char* JFileGetName(const JFilePtr file);
+static char* JFileGetPath(const JFilePtr file);
+static char* JFileGetMode(const JFilePtr file);
+static long long JFileGetSize(const JFilePtr file);
 static FILE* JFileOpen(JFilePtr file, const char *mode);
-static void JFileClose(JFilePtr file);
+static void JFileClose(const JFilePtr file);
 static char* JFileSetName(JFilePtr file, const char *newFileName);
 static char* JFileSetPath(JFilePtr file, const char *newFilePath);
 static int JFileIncDupleNum(JFilePtr file);
-static long long JFileGetSize(JFilePtr file);
-static char* JFileGetMode(JFilePtr file);
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Predefinitions of Static Functions for JFile
@@ -54,6 +72,7 @@ static char* JFileGetMode(JFilePtr file);
 
 static Bool JFMCheckIndex(JFMPtr fm, int index);
 static FileType JFMCheckFileType(JFMPtr fm, int index);
+static int JFMFindEmptyFileIndex(JFMPtr fm);
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Static Util Functions
@@ -66,6 +85,12 @@ static void _ConvertModeToString(char *s, mode_t mode);
 /// Static Functions for JFile
 ///////////////////////////////////////////////////////////////////////////////
 
+/*
+ * @fn static JFilePtr JFileNew(const char *name)
+ * @brief 파일 정보 관리 구조체 객체를 새로 생성하는 함수
+ * @param name 파일 이름(입력, 읽기 전용) 
+ * @return 성공 시 생성된 객체의 주소, 실패 시 NULL 반환
+ */
 static JFilePtr JFileNew(const char *name)
 {
 	JFilePtr file = (JFilePtr)malloc(sizeof(JFile));
@@ -95,13 +120,19 @@ static JFilePtr JFileNew(const char *name)
 	return file;
 }
 
+/*
+ * @fn static void JFileDelete(JFilePtrContainer fileContainer)
+ * @brief 파일 정보 관리 구조체 객체를 삭제하는 함수
+ * @param fileContainer 파일 정보 관리 구조체 객체 주소를 저장하는 포인터(입력, 이중 포인터)
+ * @return 반환값 없음
+ */
 static void JFileDelete(JFilePtrContainer fileContainer)
 {
 	if((fileContainer == NULL) || (*fileContainer == NULL)) return;
 	if((*fileContainer)->name != NULL) free((*fileContainer)->name);
 	if((*fileContainer)->path != NULL) free((*fileContainer)->path);
 	if((*fileContainer)->mode != NULL) free((*fileContainer)->mode);
-	if((*fileContainer)->filePointer != NULL) fclose((*fileContainer)->filePointer);
+	JFileClose(*fileContainer);
 
 	if((*fileContainer)->dataList != NULL)
 	{
@@ -120,6 +151,12 @@ static void JFileDelete(JFilePtrContainer fileContainer)
 	*fileContainer = NULL;
 }
 
+/*
+ * @fn static JFilePtr JFileLoad(JFilePtr file)
+ * @brief 파일 정보를 갱신하는 함수
+ * @param file 파일 정보 관리 구조체의 주소(입력)
+ * @return 성공 시 파일 정보 관리 구조체의 주소, 실패 시 NULL 반환
+ */
 static JFilePtr JFileLoad(JFilePtr file)
 {
 	if((file == NULL) || (file->path == NULL)) return NULL;
@@ -151,6 +188,13 @@ static JFilePtr JFileLoad(JFilePtr file)
 	return file;
 }
 
+/*
+ * @fn static FILE* JFileOpen(JFilePtr file, const char *mode)
+ * @brief 지정한 모드로 파일을 여는 함수
+ * @param file 파일 정보 관리 구조체의 주소(입력)
+ * @param mode 파일 접근 방식(입력, 읽기 전용)
+ * @return 성공 시 파일 포인터, 실패 시 NULL 반환
+ */
 static FILE* JFileOpen(JFilePtr file, const char *mode)
 {
 	if(file->filePointer != NULL) return NULL;
@@ -159,7 +203,13 @@ static FILE* JFileOpen(JFilePtr file, const char *mode)
 	return file->filePointer;
 }
 
-static void JFileClose(JFilePtr file)
+/*
+ * @fn static void JFileClose(const JFilePtr file)
+ * @brief 파일을 닫는 함수
+ * @param file 파일 정보 관리 구조체의 주소(입력, 읽기 전용)
+ * @return 반환값 없음
+ */
+static void JFileClose(const JFilePtr file)
 {
 	if(file->filePointer != NULL)
 	{
@@ -168,18 +218,30 @@ static void JFileClose(JFilePtr file)
 	}
 }
 
+/*
+ * @fn static void JFileRemove(JFilePtr file)
+ * @brief 지정한 경로에 있는 파일을 삭제하는 함수
+ * @param file 파일 정보 관리 구조체의 주소(입력)
+ * @return 반환값 없음
+ */
 static void JFileRemove(JFilePtr file)
 {
 	if(file == NULL) return;
-
 	JFileClose(file);
-
 	if((file->path != NULL) && (access(file->path, 0) == 0))
 	{
 		if(remove(file->path) == -1) return;
 	}
 }
 
+/*
+ * @fn static JFilePtr JFileWrite(JFilePtr file, const char *s, const char *mode)
+ * @brief 지정한 모드로 파일을 열어서 전달받은 문자열을 저장하는 함수
+ * @param file 파일 정보 관리 구조체의 주소(출력)
+ * @param s 저장할 문자열(입력, 읽기 전용)
+ * @param mode 파일 접근 방식(입력, 읽기 전용)
+ * @return 성공 시 파일 정보 관리 구조체의 주소, 실패 시 NULL 반환
+ */
 static JFilePtr JFileWrite(JFilePtr file, const char *s, const char *mode)
 {
 	if((file == NULL) || (s == NULL) || (mode == NULL)) return NULL;
@@ -190,6 +252,12 @@ static JFilePtr JFileWrite(JFilePtr file, const char *s, const char *mode)
 	return file;
 }
 
+/*
+ * @fn static void JFileDataListClear(JFilePtr file)
+ * @brief 파일 관리 구조체에 저장된 파일 내용을 모두 삭제하는 함수
+ * @param file 파일 정보 관리 구조체의 주소(출력)
+ * @return 반환값 없음
+ */
 static void JFileDataListClear(JFilePtr file)
 {
 	if((file == NULL) || (file->dataList == NULL)) return;
@@ -205,6 +273,13 @@ static void JFileDataListClear(JFilePtr file)
 	}
 }
 
+/*
+ * @fn static char** JFileRead(JFilePtr file, int length)
+ * @brief 지정한 파일의 전체 내용을 파일 관리 구조체에 저장하는 함수
+ * @param file 파일 정보 관리 구조체의 주소(출력)
+ * @param length 각 라인별 최대 문자 개수(입력)
+ * @return 성공 시 저장된 파일 내용, 실패 시 NULL 반환
+ */
 static char** JFileRead(JFilePtr file, int length)
 {
 	if((file == NULL) || (file->line <= 0) || (length <= 0)) return NULL;
@@ -256,6 +331,12 @@ static char** JFileRead(JFilePtr file, int length)
 	return file->dataList;
 }
 
+/*
+ * @fn static void JFileGetLine(const JFilePtr file)
+ * @brief 지정한 파일의 전체 라인수를 구하는 함수
+ * @param file 파일 정보 관리 구조체의 주소(입력, 읽기 전용)
+ * @return 반환값 업음
+ */
 static void JFileGetLine(const JFilePtr file)
 {
 	char c = '\0';
@@ -278,24 +359,50 @@ static void JFileGetLine(const JFilePtr file)
 	fclose(fp);
 }
 
-static char* JFileGetName(JFilePtr file)
+/*
+ * @fn static char* JFileGetName(const JFilePtr file)
+ * @brief 지정한 파일의 이름을 반환하는 함수
+ * @param file 파일 정보 관리 구조체의 주소(입력, 읽기 전용)
+ * @return 성공 시 파일 이름, 실패 시 NULL 반환
+ */
+static char* JFileGetName(const JFilePtr file)
 {
 	if(file == NULL) return NULL;
 	return file->name;
 }
 
-static char* JFileGetPath(JFilePtr file)
+/*
+ * @fn static char* JFileGetPath(const JFilePtr file)
+ * @brief 지정한 파일의 경로를 반환하는 함수
+ * @param file 파일 정보 관리 구조체의 주소(입력, 읽기 전용)
+ * @return 성공 시 파일 경로, 실패 시 NULL 반환
+ */
+static char* JFileGetPath(const JFilePtr file)
 {
 	if(file == NULL) return NULL;
 	return file->path;
 }
 
-static long long JFileGetSize(JFilePtr file)
+/*
+ * @fn static long long JFileGetSize(const JFilePtr file)
+ * @brief 지정한 파일의 크기를 반환하는 함수
+ * @param file 파일 정보 관리 구조체의 주소(입력, 읽기 전용)
+ * @return 성공 시 파일 크기, 실패 시 -1 반환
+ */
+static long long JFileGetSize(const JFilePtr file)
 {
 	if(file == NULL) return -1;
 	return file->stat.st_size;
 }
 
+/*
+ * @fn static char* JFileSetName(JFilePtr file, const char *name)
+ * @brief 파일의 이름을 저장하고 동시에 파일의 경로를 구해서 저장하는 함수
+ * 사용자가 파일의 경로를 먼저 저장하지 않고 파일의 이름을 저장하면 현재 경로가 설정된다.
+ * @param file 파일 정보 관리 구조체의 주소(출력)
+ * @param name 저장할 파일 이름(입력, 읽기 전용)
+ * @return 성공 시 파일 이름, 실패 시 NULL 반환
+ */
 static char* JFileSetName(JFilePtr file, const char *name)
 {
 	if(name == NULL) return NULL;
@@ -337,25 +444,72 @@ static char* JFileSetName(JFilePtr file, const char *name)
 	return file->name;
 }
 
+/*
+ * @fn static char* JFileSetPath(JFilePtr file, const char *path)
+ * @brief 파일의 경로를 저장하고 동시에 파일의 이름을 구해서 저장하는 함수
+ * 사용자가 파일의 경로를 먼저 저장하면 파일의 이름을 파싱해서 저장한다.
+ * @param file 파일 정보 관리 구조체의 주소(출력)
+ * @param name 저장할 파일 경로(입력, 읽기 전용)
+ * @return 성공 시 파일 경로, 실패 시 NULL 반환
+ */
 static char* JFileSetPath(JFilePtr file, const char *path)
 {
 	if(path == NULL) return NULL;
 	if(_CheckIfPath(path) == False) return NULL;
 
-	if(file->path != NULL) free(file->path);
+	if(file->path != NULL)
+	{
+		free(file->path);
+		file->path = NULL;
+	}
 
 	file->path = strdup(path); // malloc
 	if(file->path == NULL) return NULL;
 	file->path[strlen(file->path)] = '\0';
 
+	// 설정된 경로에서 마지막 '/' 문자 다음 문자열을 파일 이름으로 저장한다.
+	char *s = file->path;
+	int strIndex = strlen(file->path) - 1;
+	for( ; strIndex >= 0; strIndex--)
+	{
+		if(s[strIndex] == '/') break;
+	}
+
+	// 파일 경로가 아니므로 모두 해제하고 NULL 반환
+	if(strIndex == 0)
+	{
+		free(file->path);
+		file->path = NULL;
+		return NULL;
+	}
+
+	strIndex++;
+	s += strIndex;
+
+	if(file->name != NULL) free(file->name);
+	file->name = strdup(s); // malloc
+	if(file->name == NULL) return NULL;
+
 	return file->path;
 }
 
+/*
+ * @fn static int JFileIncDupleNum(JFilePtr file)
+ * @brief 지정한 파일의 중복 횟수를 증가시키는 함수
+ * @param file 파일 정보 관리 구조체의 주소(출력)
+ * @return 항상 증가된 중복 횟수 반환
+ */
 static int JFileIncDupleNum(JFilePtr file)
 {
 	return ++(file->dupleNum);
 }
 
+/*
+ * @fn static char* JFileGetMode(JFilePtr file)
+ * @brief 지정한 파일 모드를 문자열로 변환해서 반환하는 함수
+ * @param file 파일 정보 관리 구조체의 주소(출력)
+ * @return 성공 시 파일 모드 문자열, 실패 시 NULL 반환
+ */
 static char* JFileGetMode(JFilePtr file)
 {
 	if(file->mode == NULL)
@@ -371,6 +525,11 @@ static char* JFileGetMode(JFilePtr file)
 /// Functions for JFileManager
 ///////////////////////////////////////////////////////////////////////////////
 
+/*
+ * @fn JFMPtr JFMNew()
+ * @brief 파일 관리 구조체 객체를 새로 생성하는 함수
+ * @return 성공 시 생성된 객체의 주소, 실패 시 NULL 반환
+ */
 JFMPtr JFMNew()
 {
 	JFMPtr fm = (JFMPtr)malloc(sizeof(JFM));
@@ -391,6 +550,12 @@ JFMPtr JFMNew()
 	return fm;
 }
 
+/*
+ * @fn void JFMDelete(JFMPtrContainer fmContainer)
+ * @brief 파일 관리 구조체 객체를 삭제하는 함수
+ * @param fmContainer 파일 관리 구조체 객체 주소를 저장하는 포인터(입력, 이중 포인터)
+ * @return 반환값 없음
+ */
 void JFMDelete(JFMPtrContainer fmContainer)
 {
 	if((fmContainer == NULL) || (*fmContainer == NULL)) return;
@@ -410,24 +575,53 @@ void JFMDelete(JFMPtrContainer fmContainer)
 	*fmContainer = NULL;
 }
 
+/*
+ * @fn void* JFMSetUserData(JFMPtr fm, void *userData)
+ * @brief 파일 관리 구조체 객체에 사용자 데이터를 저장하는 함수
+ * @param fm 파일 관리 구조체의 주소(출력)
+ * @param userData 저장할 데이터의 주소(입력)
+ * @return 성공 시 저장된 사용자 데이터의 주소, 실패 시 NULL 반환
+ */
 void* JFMSetUserData(JFMPtr fm, void *userData)
 {
 	if((fm == NULL) || (userData == NULL)) return NULL;
 	return fm->userData = userData;
 }
 
-void* JFMGetUserData(JFMPtr fm)
+/*
+ * @fn void* JFMGetUserData(const JFMPtr fm)
+ * @brief 파일 관리 구조체 객체에 저장된 사용자 데이터를 반환하는 함수
+ * @param fm 파일 관리 구조체의 주소(입력, 읽기 전용)
+ * @return 성공 시 저장된 사용자 데이터의 주소, 실패 시 NULL 반환
+ */
+void* JFMGetUserData(const JFMPtr fm)
 {
 	if(fm == NULL) return NULL;
 	return fm->userData;
 }
 
+/*
+ * @fn JFMPtr JFMNewFile(JFMPtr fm, const char *name)
+ * @brief 파일 관리 구조체 객체에 새로운 파일을 추가하는 함수
+ * @param fm 파일 관리 구조체의 주소(출력)
+ * @param name 추가할 파일의 이름(입력, 읽기 전용)
+ * @return 성공 시 파일 관리 구조체의 주소, 실패 시 NULL 반환
+ */
 JFMPtr JFMNewFile(JFMPtr fm, const char *name)
 {
 	if((fm == NULL) || (name == NULL)) return NULL;
 	if(_CheckIfPath(name) == True) return NULL;
 
-	if(fm->fileContainer[fm->size] == NULL)
+	int targetIndex = 0;
+
+	//TODO 앞 인덱스의 파일을 삭제하면 해당 인덱스가 비어있게 되므로 여기에 추가해야 한다.
+	// 이 인덱스를 찾아서 여기에 파일을 추가하고, realloc 하지 않는다.
+	if((targetIndex = JFMFindEmptyFileIndex(fm)) != -1)
+	{
+		targetIndex = fm->size;
+	}
+
+	if(fm->fileContainer[targetIndex] == NULL)
 	{
 		// 중복 불허, 같은 파일을 동시에 사용할 수 없음
 		if(fm->size > 1)
@@ -435,28 +629,38 @@ JFMPtr JFMNewFile(JFMPtr fm, const char *name)
 			if(JFMFindFileByName(fm, name) != NULL) return NULL;
 		}
 
+		JFilePtrContainer newContainer = fm->fileContainer;
 		JFilePtr newFile = JFileNew(name);
 		if(newFile == NULL) return NULL;
 
-		JFilePtrContainer newContainer = (JFilePtrContainer)realloc(fm->fileContainer, (fm->size + 1));
-		if(newContainer == NULL)
+		if(targetIndex == fm->size)
 		{
-			JFileDelete(&newFile);
-			return NULL;
+			newContainer = (JFilePtrContainer)realloc(fm->fileContainer, (fm->size + 1));
+			if(newContainer == NULL)
+			{
+				JFileDelete(&newFile);
+				return NULL;
+			}
+			(fm->size)++;
 		}
 
-		newContainer[fm->size - 1] = newFile;
-		newContainer[fm->size] = NULL;
+		newContainer[targetIndex - 1] = newFile;
+		newContainer[targetIndex] = NULL;
 
 		fm->fileContainer = newContainer;
-		(fm->size)++;
-
 		return fm;
 	}
 
 	return NULL;
 }
 
+/*
+ * @fn JFMPtr JFMDeleteFile(JFMPtr fm, int index)
+ * @brief 파일 관리 구조체 객체에 저장된 파일을 삭제하는 함수
+ * @param fm 파일 관리 구조체의 주소(출력)
+ * @param index 삭제할 파일의 인덱스 번호(입력)
+ * @return 성공 시 파일 관리 구조체의 주소, 실패 시 NULL 반환
+ */
 JFMPtr JFMDeleteFile(JFMPtr fm, int index)
 {
 	if((fm == NULL) || (fm->fileContainer == NULL) || (fm->size <= 1) || (JFMCheckIndex(fm, index) == False)) return NULL;
@@ -473,6 +677,12 @@ JFMPtr JFMDeleteFile(JFMPtr fm, int index)
 	return fm;
 }
 
+/*
+ * @fn JFMPtr JFMDeleteFile(JFMPtr fm, int index)
+ * @brief 파일 관리 구조체 객체에 저장된 파일을 모두 삭제하는 함수
+ * @param fm 파일 관리 구조체의 주소(출력)
+ * @return 반환값 없음
+ */
 void JFMDeleteAllFiles(JFMPtr fm)
 {
 	if(fm == NULL) return;
@@ -489,24 +699,53 @@ void JFMDeleteAllFiles(JFMPtr fm)
 	}
 }
 
-char* JFMGetFileName(JFMPtr fm, int index)
+/*
+ * @fn char* JFMGetFileName(const JFMPtr fm, int index)
+ * @brief 지정한 파일의 이름을 반환하는 함수
+ * @param fm 파일 관리 구조체의 주소(입력, 읽기 전용)
+ * @param index 파일의 인덱스 번호(입력)
+ * @return 성공 시 파일 이름, 실패 시 NULL 반환
+ */
+char* JFMGetFileName(const JFMPtr fm, int index)
 {
 	if((fm == NULL) || (JFMCheckIndex(fm, index) == False)) return NULL;
 	return JFileGetName(JFMGetFile(fm, index));
 }
 
-char* JFMGetFilePath(JFMPtr fm, int index)
+/*
+ * @fn char* JFMGetFilePath(const JFMPtr fm, int index)
+ * @brief 지정한 파일의 경로를 반환하는 함수
+ * @param fm 파일 관리 구조체의 주소(입력, 읽기 전용)
+ * @param index 파일의 인덱스 번호(입력)
+ * @return 성공 시 파일 경로, 실패 시 NULL 반환
+ */
+char* JFMGetFilePath(const JFMPtr fm, int index)
 {
 	if((fm == NULL) || (JFMCheckIndex(fm, index) == False)) return NULL;
 	return JFileGetPath(JFMGetFile(fm, index));
 }
 
-long long JFMGetFileSize(JFMPtr fm, int index)
+/*
+ * @fn long long JFMGetFileSize(const JFMPtr fm, int index)
+ * @brief 지정한 파일의 크기를 반환하는 함수
+ * @param fm 파일 관리 구조체의 주소(입력, 읽기 전용)
+ * @param index 파일의 인덱스 번호(입력)
+ * @return 성공 시 파일 크기, 실패 시 -1 반환
+ */
+long long JFMGetFileSize(const JFMPtr fm, int index)
 {
 	if((fm == NULL) || (JFMCheckIndex(fm, index) == False)) return -1;
 	return JFileGetSize(JFMGetFile(fm, index));
 }
 
+/*
+ * @fn long long JFMGetFileSize(const JFMPtr fm, int index)
+ * @brief 지정한 파일을 열어서 전달받은 문자열을 저장하는 함수
+ * @param fm 파일 관리 구조체의 주소(출력)
+ * @param s 저장할 문자열(입력, 읽기 전용)
+ * @param mode 파일 접근 방식(입력, 읽기 전용)
+ * @return 성공 시 파일 관리 구조체의 주소, 실패 시 NULL 반환
+ */
 JFMPtr JFMWriteFile(JFMPtr fm, int index, const char *s, const char *mode)
 {
 	if((fm == NULL) || (JFMCheckIndex(fm, index) == False) || (s == NULL)) return NULL;
@@ -514,37 +753,66 @@ JFMPtr JFMWriteFile(JFMPtr fm, int index, const char *s, const char *mode)
 	return fm;
 }
 
+/*
+ * @fn char** JFMReadFile(JFMPtr fm, int index)
+ * @brief 지정한 파일 내용을 읽어서 반환하는 함수
+ * @param fm 파일 관리 구조체의 주소(출력)
+ * @param index 파일의 인덱스 번호(입력)
+ * @return 성공 시 파일 내용, 실패 시 NULL 반환
+ */
 char** JFMReadFile(JFMPtr fm, int index)
 {
 	if((fm == NULL) || (JFMCheckIndex(fm, index) == False)) return NULL;
 	return JFileRead(JFMGetFile(fm, index), LINE_LENGTH);
 }
 
-JFilePtr JFMFindFileByName(JFMPtr fm, const char *name)
+/*
+ * @fn JFilePtr JFMFindFileByName(const JFMPtr fm, const char *name)
+ * @brief 파일 이름을 통해 파일 관리 구조체에서 파일을 검색해서 반환하는 함수
+ * @param fm 파일 관리 구조체의 주소(입력, 읽기 전용)
+ * @param name 검색할 파일 이름(입력, 읽기 전용)
+ * @return 성공 시 파일 정보 구조체의 주소, 실패 시 NULL 반환
+ */
+JFilePtr JFMFindFileByName(const JFMPtr fm, const char *name)
 {
 	if((fm == NULL) || (name == NULL)) return NULL;
 	if(_CheckIfPath(name) == True) return NULL;
 
 	int nameLength = strlen(name);
 	int fileIndex = 0;
+	JFilePtr file = NULL;
 
-	for( ; fileIndex <= fm->size; fileIndex++)
+	for( ; fileIndex < fm->size; fileIndex++)
 	{
-		if(strncmp(name, JFMGetFileName(fm, fileIndex), nameLength) == 0)
-		{
-			return JFMGetFile(fm, fileIndex);
-		}
+		file = JFMGetFile(fm, fileIndex);
+		if(file == NULL) continue;
+		if(strncmp(name, file->name, nameLength) == 0) return file;
 	}
 
 	return NULL;
 }
 
-JFilePtr JFMGetFile(JFMPtr fm, int index)
+/*
+ * @fn JFilePtr JFMGetFile(const JFMPtr fm, int index)
+ * @brief 지정한 파일 정보 구조체의 주소를 반환하는 함수
+ * @param fm 파일 관리 구조체의 주소(입력, 읽기 전용)
+ * @param index 파일의 인덱스 번호(입력)
+ * @return 성공 시 파일 정보 구조체의 주소, 실패 시 NULL 반환
+ */
+JFilePtr JFMGetFile(const JFMPtr fm, int index)
 {
 	if((fm == NULL) || (JFMCheckIndex(fm, index) == False)) return NULL;
 	return fm->fileContainer[index];
 }
 
+/*
+ * @fn JFMPtr JFMMoveFile(JFMPtr fm, int index, const char *newFilePath)
+ * @brief 파일을 지정한 경로로 이동시키는 함수
+ * @param fm 파일 관리 구조체의 주소(출력)
+ * @param index 파일의 인덱스 번호(입력)
+ * @param newFilePath 파일을 이동시킬 경로(입력, 읽기 전용)
+ * @return 성공 시 파일 관리 구조체의 주소, 실패 시 NULL 반환
+ */
 JFMPtr JFMMoveFile(JFMPtr fm, int index, const char *newFilePath)
 {
 	if((fm == NULL) || (JFMCheckIndex(fm, index) == False) || (newFilePath == NULL)) return NULL;
@@ -557,6 +825,14 @@ JFMPtr JFMMoveFile(JFMPtr fm, int index, const char *newFilePath)
 	return fm;
 }
 
+/*
+ * @fn JFMPtr JFMCopyFile(JFMPtr fm, int index, const char *newFilePath)
+ * @brief 파일을 지정한 경로로 복사하는 함수
+ * @param fm 파일 관리 구조체의 주소(출력)
+ * @param index 파일의 인덱스 번호(입력)
+ * @param newFilePath 파일을 복사할 경로(입력, 읽기 전용)
+ * @return 성공 시 파일 관리 구조체의 주소, 실패 시 NULL 반환
+ */
 JFMPtr JFMCopyFile(JFMPtr fm, int index, const char *newFilePath)
 {
 	if((fm == NULL) || (JFMCheckIndex(fm, index) == False)) return NULL;
@@ -596,6 +872,14 @@ JFMPtr JFMCopyFile(JFMPtr fm, int index, const char *newFilePath)
 	return fm;
 }
 
+/*
+ * @fn JFMPtr JFMRenameFile(JFMPtr fm, int index, const char *newFileName)
+ * @brief 지정한 파일의 이름을 새로 설정하는 함수
+ * @param fm 파일 관리 구조체의 주소(출력)
+ * @param index 파일의 인덱스 번호(입력)
+ * @param newFileName 새로 설정할 파일 이름(입력, 읽기 전용)
+ * @return 성공 시 파일 관리 구조체의 주소, 실패 시 NULL 반환
+ */
 JFMPtr JFMRenameFile(JFMPtr fm, int index, const char *newFileName)
 {
 	if((fm == NULL) || (JFMCheckIndex(fm, index) == False) || (newFileName == NULL)) return NULL;
@@ -611,6 +895,13 @@ JFMPtr JFMRenameFile(JFMPtr fm, int index, const char *newFileName)
 	return fm;
 }
 
+/*
+ * @fn void JFMPrintFile(JFMPtr fm, int index)
+ * @brief 지정한 파일의 상태 및 정보를 출력하는 함수
+ * @param fm 파일 관리 구조체의 주소(출력)
+ * @param index 파일의 인덱스 번호(입력)
+ * @return 반환값 없음
+ */
 void JFMPrintFile(JFMPtr fm, int index)
 {
 	if((fm == NULL) || (JFMCheckIndex(fm, index) == False)) return;
@@ -636,6 +927,14 @@ void JFMPrintFile(JFMPtr fm, int index)
 	printf("----------------------------------\n");
 }
 
+/*
+ * @fn JFMPtr JFMTruncateFile(JFMPtr fm, int index, off_t length)
+ * @brief 지정한 파일의 크기를 새로 설정하는 함수
+ * @param fm 파일 관리 구조체의 주소(출력)
+ * @param index 파일의 인덱스 번호(입력)
+ * @param length 새로 설정할 파일의 크기(입력)
+ * @return 성공 시 파일 관리 구조체의 주소, 실패 시 NULL 반환
+ */
 JFMPtr JFMTruncateFile(JFMPtr fm, int index, off_t length)
 {
 	if((fm == NULL) || (JFMCheckIndex(fm, index) == False) || (length < 0)) return NULL;
@@ -654,6 +953,14 @@ JFMPtr JFMTruncateFile(JFMPtr fm, int index, off_t length)
 	return fm;
 }
 
+/*
+ * @fn JFMPtr JFMChangeModeByNumber(JFMPtr fm, int index, const char *mode)
+ * @brief 지정한 파일의 접근 방식을 새로 설정하는 함수
+ * @param fm 파일 관리 구조체의 주소(출력)
+ * @param index 파일의 인덱스 번호(입력)
+ * @param mode 새로 설정할 파일 접근 방식(입력, 읽기 전용)
+ * @return 성공 시 파일 관리 구조체의 주소, 실패 시 NULL 반환
+ */
 JFMPtr JFMChangeModeByNumber(JFMPtr fm, int index, const char *mode)
 {
 	if((fm == NULL) || (JFMCheckIndex(fm, index) == False) || (strlen(mode) != 4)) return NULL;
@@ -669,6 +976,13 @@ JFMPtr JFMChangeModeByNumber(JFMPtr fm, int index, const char *mode)
 	return fm;
 }
 
+/*
+ * @fn char* JFMGetFileMode(JFMPtr fm, int index)
+ * @brief 지정한 파일의 접근 방식을 문자열로 변환해서 반환하는 함수
+ * @param fm 파일 관리 구조체의 주소(출력)
+ * @param index 파일의 인덱스 번호(입력)
+ * @return 성공 시 파일 모드 문자열, 실패 시 NULL 반환
+ */
 char* JFMGetFileMode(JFMPtr fm, int index)
 {
 	if((fm == NULL) || (JFMCheckIndex(fm, index) == False)) return NULL;
@@ -683,12 +997,26 @@ char* JFMGetFileMode(JFMPtr fm, int index)
 /// Static Functions for JFileManager
 ///////////////////////////////////////////////////////////////////////////////
 
+/*
+ * @fn static Bool JFMCheckIndex(JFMPtr fm, int index)
+ * @brief 지정한 인덱스의 경계를 검사하는 함수
+ * @param fm 파일 관리 구조체의 주소(출력)
+ * @param index 파일의 인덱스 번호(입력)
+ * @return 성공 시 True, 실패 시 False 반환(Bool 열거형 참고)
+ */
 static Bool JFMCheckIndex(JFMPtr fm, int index)
 {
 	if((index < 0) || (index >= fm->size)) return False;
 	return True;
 }
 
+/*
+ * @fn static FileType JFMCheckFileType(JFMPtr fm, int index)
+ * @brief 지정한 파일 유형을 검사하는 함수
+ * @param fm 파일 관리 구조체의 주소(출력)
+ * @param index 파일의 인덱스 번호(입력)
+ * @return 성공 시 파일 유형, 실패 시 Unknown 반환(FileType 열거형 참고)
+ */
 static FileType JFMCheckFileType(JFMPtr fm, int index)
 {
 	JFilePtr file = JFMGetFile(fm, index);
@@ -707,10 +1035,32 @@ static FileType JFMCheckFileType(JFMPtr fm, int index)
 	return Unknown;
 }
 
+/*
+ * @fn static int JFMFindEmptyFileIndex(JFMPtr fm)
+ * @brief 비어있는 파일 인덱스를 반환하는 함수
+ * @param fm 파일 관리 구조체의 주소(출력)
+ * @return 성공 시 파일 인덱스, 실패 시 -1 반환
+ */
+static int JFMFindEmptyFileIndex(JFMPtr fm)
+{
+	int fileIndex = 0;
+	for( ; fileIndex < fm->size; fileIndex++)
+	{
+		if(fm->fileContainer[fileIndex] == NULL) return fileIndex;
+	}
+	return -1;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Static Util Function
 ///////////////////////////////////////////////////////////////////////////////
 
+/*
+ * @fn static Bool _CheckIfPath(const char *s)
+ * @brief 지정한 문자열이 경로인지 검사하는 함수
+ * @param s 검사할 문자열(입력, 읽기 전용)
+ * @return 성공 시 True, 실패 시 False 반환(Bool 열거형 참고)
+ */
 static Bool _CheckIfPath(const char *s)
 {
 	if(s == NULL) return False;
@@ -723,6 +1073,13 @@ static Bool _CheckIfPath(const char *s)
 	return False;
 }
 
+/*
+ * @fn static void _ConvertModeToString(char *s, mode_t mode)
+ * @brief 지정한 파일 접근 방식을 문자열로 변환하는 함수
+ * @param s 저장할 문자열(출력)
+ * @param mode 변환할 파일 접근 방식(입력)
+ * @return 반환값 없음
+ */
 static void _ConvertModeToString(char *s, mode_t mode)
 {
 	const char basePermissions[MAX_MODE_NUM] = "rwxrwxrwx";

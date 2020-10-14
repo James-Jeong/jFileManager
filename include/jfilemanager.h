@@ -5,28 +5,6 @@
 #include <string.h>
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Enums
-///////////////////////////////////////////////////////////////////////////////
-
-typedef enum Bool
-{
-	False = -1,
-	True = 1
-} Bool;
-
-typedef enum FileType
-{
-	Unknown = -1,
-	Directory = 1,
-	Regular,
-	CharDevice,
-	BlockDevice,
-	Pipe,
-	Socket,
-	SymbolicLink
-} FileType;
-
-///////////////////////////////////////////////////////////////////////////////
 /// Macros
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -46,7 +24,7 @@ typedef struct stat FileStatus, *FileStatusPtr, **FileStatusPtrContainer;
 
 typedef struct _jfile_t
 {
-	// 복사 시 중복된 이름인 경우 카운트
+	// 중복 횟수(복사 시 중복된 이름인 경우 카운트)
 	int dupleNum;
 	// 전체 라인 수
 	int line;
@@ -84,11 +62,12 @@ typedef struct _jfilemanager_t
 JFMPtr JFMNew();
 void JFMDelete(JFMPtrContainer fmContainer);
 void* JFMSetUserData(JFMPtr fm, void *userData);
-void* JFMGetUserData(JFMPtr fm);
-char* JFMGetFileName(JFMPtr fm, int index);
-char* JFMGetFilePath(JFMPtr fm, int index);
-char* JFMGetFileMode(JFMPtr fm, int index);
-long long JFMGetFileSize(JFMPtr fm, int index);
+void* JFMGetUserData(const JFMPtr fm);
+char* JFMGetFileName(const JFMPtr fm, int index);
+char* JFMGetFilePath(const JFMPtr fm, int index);
+char* JFMGetFileMode(const JFMPtr fm, int index);
+JFilePtr JFMGetFile(const JFMPtr fm, int index);
+long long JFMGetFileSize(const JFMPtr fm, int index);
 
 // 파일 불러오기(없으면 새로 만들기), 삭제하기
 JFMPtr JFMNewFile(JFMPtr fm, const char *name);
@@ -96,12 +75,11 @@ JFMPtr JFMDeleteFile(JFMPtr fm, int index);
 void JFMDeleteAllFiles(JFMPtr fm);
 
 // 파일 쓰기, 읽기(출력하기)
-JFilePtr JFMGetFile(JFMPtr fm, int index);
 JFMPtr JFMWriteFile(JFMPtr fm, int index, const char *s, const char *mode);
 char** JFMReadFile(JFMPtr fm, int index);
 
 // 파일 검색하기
-JFilePtr JFMFindFileByName(JFMPtr fm, const char *name);
+JFilePtr JFMFindFileByName(const JFMPtr fm, const char *name);
 
 // 파일 이름 변경
 JFMPtr JFMRenameFile(JFMPtr fm, int index, const char *newFileName);
