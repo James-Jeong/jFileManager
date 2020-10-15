@@ -70,7 +70,7 @@ JFilePtr JFMGetFile(const JFMPtr fm, int index);
 long long JFMGetFileSize(const JFMPtr fm, int index);
 
 // 파일 불러오기(없으면 새로 만들기), 삭제하기
-JFMPtr JFMNewFile(JFMPtr fm, const char *name);
+JFMPtr JFMNewFile(JFMPtr fm, const char *path);
 JFMPtr JFMDeleteFile(JFMPtr fm, int index);
 void JFMDeleteAllFiles(JFMPtr fm);
 
@@ -79,13 +79,13 @@ JFMPtr JFMWriteFile(JFMPtr fm, int index, const char *s, const char *mode);
 char** JFMReadFile(JFMPtr fm, int index);
 
 // 파일 검색하기
-JFilePtr JFMFindFileByName(const JFMPtr fm, const char *name);
+JFilePtr JFMFindFileByPath(const JFMPtr fm, const char *path);
 
 // 파일 이름 변경
-JFMPtr JFMRenameFile(JFMPtr fm, int index, const char *newFileName);
+JFMPtr JFMRenameFilePath(JFMPtr fm, int index, const char *newFilePath);
 
 // 파일 복사하기, 잘라내기(이동하기)
-JFMPtr JFMCopyFile(JFMPtr fm, int index, const char *newFileName);
+JFMPtr JFMCopyFile(JFMPtr fm, int index, const char *newFilePath);
 JFMPtr JFMMoveFile(JFMPtr fm, int index, const char *destPath);
 
 // 파일 크기 변경

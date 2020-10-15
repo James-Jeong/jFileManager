@@ -40,30 +40,31 @@ TEST(FileManager, SetAndGetUserData, {
 
 TEST(FileManager, CreateAndDeleteFile, {
 	char *fileName = "fm_test.txt";
-//	char *filePath = "/home/dev1/src_test/jFileManager/test/fm_test.txt";
+	char *filePath = "/home/dev1/src_test/jFileManager/test/fm_test.txt";
 	JFMPtr fm = JFMNew();
 
 	// 정상 동작
+	EXPECT_NOT_NULL(JFMNewFile(fm, filePath));
+	// 같은 파일 경로로 재호출 시 NULL 반환
+	EXPECT_NULL(JFMNewFile(fm, filePath));
+	//TODO 파일 경로가 아닌 이름을 매개변수로 사용하면 현재 경로를 저장
 	EXPECT_NOT_NULL(JFMNewFile(fm, fileName));
-	// 같은 파일 이름으로 재호출 시 NULL 반환
-	EXPECT_NULL(JFMNewFile(fm, fileName));
-	//TODO 파일 이름이 아닌 경로를 매개변수로 사용하면 이름을 파싱하고 경로를 저장
-//	EXPECT_NOT_NULL(JFMNewFile(fm, filePath));
 	// NULL 입력 시, NULL 반환
-	EXPECT_NULL(JFMNewFile(NULL, fileName));
-	EXPECT_NULL(JFMNewFile(fm, NULL));
-	EXPECT_NULL(JFMNewFile(NULL, NULL));
+//	EXPECT_NULL(JFMNewFile(NULL, fileName));
+//	EXPECT_NULL(JFMNewFile(fm, NULL));
+//	EXPECT_NULL(JFMNewFile(NULL, NULL));
 
 	// 정상 동작
 	EXPECT_NOT_NULL(JFMDeleteFile(fm, 0));
+	EXPECT_NOT_NULL(JFMDeleteFile(fm, 1));
 	// 재호출 시 NULL 반환
 	EXPECT_NULL(JFMDeleteFile(fm, 0));
 
 	// 인덱스 오류 시 NULL 반환
-	EXPECT_NULL(JFMDeleteFile(fm, -1));
-	EXPECT_NULL(JFMDeleteFile(fm, 1));
+//	EXPECT_NULL(JFMDeleteFile(fm, -1));
+//	EXPECT_NULL(JFMDeleteFile(fm, 2));
 	// 매니저 객체가 NULL 이면 NULL 반환
-	EXPECT_NULL(JFMDeleteFile(NULL, 0));
+//	EXPECT_NULL(JFMDeleteFile(NULL, 0));
 
 	JFMDelete(&fm);
 })
@@ -243,7 +244,7 @@ TEST(FileManager, TruncateFile, {
 	JFMDelete(&fm);
 })
 
-TEST(FileManager, RenameFile, {
+TEST(FileManager, RenameFilePath, {
 	char *expected1 = "Hello world!\n";
 	char *fileName1 = "fm_test1.txt";
 	char *fileName2 = "fm_test2.txt";
@@ -255,13 +256,13 @@ TEST(FileManager, RenameFile, {
 	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
 	EXPECT_NOT_NULL(JFMWriteFile(fm, 0, expected1, "a"));
 
-	EXPECT_NOT_NULL(JFMRenameFile(fm, 0, fileName2));
+	EXPECT_NOT_NULL(JFMRenameFilePath(fm, 0, fileName2));
 	EXPECT_STR_EQUAL(JFMGetFileName(fm, 0), fileName2);
 
-	EXPECT_NULL(JFMRenameFile(NULL, 0, fileName2));
-	EXPECT_NULL(JFMRenameFile(fm, -1, fileName2));
-	EXPECT_NULL(JFMRenameFile(fm, 0, NULL));
-	EXPECT_NULL(JFMRenameFile(NULL, -1, NULL));
+	EXPECT_NULL(JFMRenameFilePath(NULL, 0, fileName2));
+	EXPECT_NULL(JFMRenameFilePath(fm, -1, fileName2));
+	EXPECT_NULL(JFMRenameFilePath(fm, 0, NULL));
+	EXPECT_NULL(JFMRenameFilePath(NULL, -1, NULL));
 
 	JFMDeleteFile(fm, 0);
 	JFMDelete(&fm);
@@ -297,17 +298,17 @@ TEST(FileManager, ChangeMode, {
 	JFMDelete(&fm);
 })
 
-TEST(FileManager, FindFileByName, {
-	char *fileName = "fm_test.txt";
+TEST(FileManager, FindFileByPath, {
+	char *filePath = "/home/dev1/src_test/jFileManager/fm_test2.txt";
 	JFMPtr fm = JFMNew();
-	JFMNewFile(fm, fileName);
+	JFMNewFile(fm, filePath);
 
-	EXPECT_NOT_NULL(JFMFindFileByName(fm, "fm_test.txt"));
+	EXPECT_NOT_NULL(JFMFindFileByPath(fm, filePath));
 
-	EXPECT_NULL(JFMFindFileByName(fm, "abc.txt"));
-	EXPECT_NULL(JFMFindFileByName(fm, NULL));
-	EXPECT_NULL(JFMFindFileByName(NULL, "fm_test.txt"));
-	EXPECT_NULL(JFMFindFileByName(NULL, NULL));
+	EXPECT_NULL(JFMFindFileByPath(fm, "abc.txt"));
+	EXPECT_NULL(JFMFindFileByPath(fm, NULL));
+	EXPECT_NULL(JFMFindFileByPath(NULL, "fm_test.txt"));
+	EXPECT_NULL(JFMFindFileByPath(NULL, NULL));
 
 	JFMDeleteFile(fm, 0);
 	JFMDelete(&fm);
@@ -334,9 +335,9 @@ int main()
 //		Test_FileManager_CopyFile,
 		Test_FileManager_MoveFile,
 		Test_FileManager_TruncateFile,
-		Test_FileManager_RenameFile,
+		Test_FileManager_RenameFilePath,
 		Test_FileManager_ChangeMode,
-		Test_FileManager_FindFileByName
+		Test_FileManager_FindFileByPath
     );
 
     RUN_ALL_TESTS();

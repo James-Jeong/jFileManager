@@ -49,7 +49,7 @@ typedef enum FileType
 /// Predefinitions of Static Functions for JFile
 ///////////////////////////////////////////////////////////////////////////////
 
-static JFilePtr JFileNew(const char *name);
+static JFilePtr JFileNew(const char *path);
 static void JFileDelete(JFilePtrContainer fileContainer);
 static void JFileDataListClear(JFilePtr file);
 static JFilePtr JFileLoad(JFilePtr file);
@@ -89,12 +89,12 @@ static Bool _CheckIfStringIsDigits(const char *s);
 ///////////////////////////////////////////////////////////////////////////////
 
 /*
- * @fn static JFilePtr JFileNew(const char *name)
+ * @fn static JFilePtr JFileNew(const char *path)
  * @brief 파일 정보 관리 구조체 객체를 새로 생성하는 함수
- * @param name 파일 이름(입력, 읽기 전용) 
+ * @param path 파일 경로(입력, 읽기 전용) 
  * @return 성공 시 생성된 객체의 주소, 실패 시 NULL 반환
  */
-static JFilePtr JFileNew(const char *name)
+static JFilePtr JFileNew(const char *path)
 {
 	JFilePtr file = (JFilePtr)malloc(sizeof(JFile));
 	if(file == NULL) return NULL;
@@ -108,10 +108,21 @@ static JFilePtr JFileNew(const char *name)
 	file->line = 0;
 	file->totalCharCount = 0;
 
-	if(JFileSetName(file, name) == NULL)
+	if(_CheckIfPath(path) == False)
 	{
-		free(file);
-		return NULL;
+		if(JFileSetName(file, path) == NULL)
+		{
+			free(file);
+			return NULL;
+		}
+	}
+	else
+	{
+		if(JFileSetPath(file, path) == NULL)
+		{
+			free(file);
+			return NULL;
+		}
 	}
 
 	if(JFileLoad(file) == NULL)
@@ -140,14 +151,18 @@ static void JFileDelete(JFilePtrContainer fileContainer)
 	if((*fileContainer)->dataList != NULL)
 	{
 		int dataListIndex = 0;
+		printf("line:%d\n", (*fileContainer)->line);
 		for( ; dataListIndex < (*fileContainer)->line; dataListIndex++)
 		{
+			printf("dataListIndex:%d\n", dataListIndex);
 			if(((*fileContainer)->dataList)[dataListIndex] != NULL)
 			{
 				free(((*fileContainer)->dataList)[dataListIndex]);
+				((*fileContainer)->dataList)[dataListIndex] = NULL;
 			}
 		}
 		free((*fileContainer)->dataList);
+		(*fileContainer)->dataList = NULL;
 	}
 
 	free(*fileContainer);
@@ -427,7 +442,7 @@ static long long JFileGetSize(const JFilePtr file)
  */
 static char* JFileSetName(JFilePtr file, const char *name)
 {
-	if(name == NULL) return NULL;
+	if((file == NULL) || (name == NULL)) return NULL;
 	if(_CheckIfPath(name) == True) return NULL;
 
 	if(file->name != NULL)
@@ -623,22 +638,21 @@ void* JFMGetUserData(const JFMPtr fm)
 }
 
 /*
- * @fn JFMPtr JFMNewFile(JFMPtr fm, const char *name)
+ * @fn JFMPtr JFMNewFile(JFMPtr fm, const char *path)
  * @brief 파일 관리 구조체 객체에 새로운 파일을 추가하는 함수
  * @param fm 파일 관리 구조체의 주소(출력)
- * @param name 추가할 파일의 이름(입력, 읽기 전용)
+ * @param path 추가할 파일의 경로(입력, 읽기 전용)
  * @return 성공 시 파일 관리 구조체의 주소, 실패 시 NULL 반환
  */
-JFMPtr JFMNewFile(JFMPtr fm, const char *name)
+JFMPtr JFMNewFile(JFMPtr fm, const char *path)
 {
-	if((fm == NULL) || (name == NULL)) return NULL;
-	if(_CheckIfPath(name) == True) return NULL;
+	if((fm == NULL) || (path == NULL)) return NULL;
 
 	int targetIndex = 0;
 
-	//TODO 앞 인덱스의 파일을 삭제하면 해당 인덱스가 비어있게 되므로 여기에 추가해야 한다.
-	// 이 인덱스를 찾아서 여기에 파일을 추가하고, realloc 하지 않는다.
-	if((targetIndex = JFMFindEmptyFileIndex(fm)) != -1)
+	//TODO NULL 인 파일 인덱스 위치를 다 없애고 NULL 이 아닌 파일 정보만 정리해야 한다.
+	
+	if((targetIndex = JFMFindEmptyFileIndex(fm)) == -1)
 	{
 		targetIndex = fm->size;
 	}
@@ -648,28 +662,27 @@ JFMPtr JFMNewFile(JFMPtr fm, const char *name)
 		// 중복 불허, 같은 파일을 동시에 사용할 수 없음
 		if(fm->size > 1)
 		{
-			if(JFMFindFileByName(fm, name) != NULL) return NULL;
+			if(JFMFindFileByPath(fm, path) != NULL) return NULL;
 		}
 
-		JFilePtrContainer newContainer = fm->fileContainer;
-		JFilePtr newFile = JFileNew(name);
+		JFilePtr newFile = JFileNew(path);
 		if(newFile == NULL) return NULL;
 
-		if(targetIndex == fm->size)
+		if(targetIndex == (fm->size - 1))
 		{
-			newContainer = (JFilePtrContainer)realloc(fm->fileContainer, (fm->size + 1));
+			JFilePtrContainer newContainer = (JFilePtrContainer)realloc(fm->fileContainer, (fm->size + 1));
 			if(newContainer == NULL)
 			{
 				JFileDelete(&newFile);
 				return NULL;
 			}
 			(fm->size)++;
+			newContainer[targetIndex] = newFile;
+			newContainer[targetIndex + 1] = NULL;
+			fm->fileContainer = newContainer;
 		}
+		else fm->fileContainer[targetIndex] = newFile;
 
-		newContainer[targetIndex - 1] = newFile;
-		newContainer[targetIndex] = NULL;
-
-		fm->fileContainer = newContainer;
 		return fm;
 	}
 
@@ -789,18 +802,18 @@ char** JFMReadFile(JFMPtr fm, int index)
 }
 
 /*
- * @fn JFilePtr JFMFindFileByName(const JFMPtr fm, const char *name)
+ * @fn JFilePtr JFMFindFileByPath(const JFMPtr fm, const char *path)
  * @brief 파일 이름을 통해 파일 관리 구조체에서 파일을 검색해서 반환하는 함수
  * @param fm 파일 관리 구조체의 주소(입력, 읽기 전용)
- * @param name 검색할 파일 이름(입력, 읽기 전용)
+ * @param path 검색할 파일 경로(입력, 읽기 전용)
  * @return 성공 시 파일 정보 구조체의 주소, 실패 시 NULL 반환
  */
-JFilePtr JFMFindFileByName(const JFMPtr fm, const char *name)
+JFilePtr JFMFindFileByPath(const JFMPtr fm, const char *path)
 {
-	if((fm == NULL) || (name == NULL)) return NULL;
-	if(_CheckIfPath(name) == True) return NULL;
+	if((fm == NULL) || (path == NULL)) return NULL;
+	if(_CheckIfPath(path) == False) return NULL;
 
-	int nameLength = strlen(name);
+	int pathLength = strlen(path);
 	int fileIndex = 0;
 	JFilePtr file = NULL;
 
@@ -808,7 +821,7 @@ JFilePtr JFMFindFileByName(const JFMPtr fm, const char *name)
 	{
 		file = JFMGetFile(fm, fileIndex);
 		if(file == NULL) continue;
-		if(strncmp(name, file->name, nameLength) == 0) return file;
+		if(strncmp(path, file->path, pathLength) == 0) return file;
 	}
 
 	return NULL;
@@ -895,22 +908,22 @@ JFMPtr JFMCopyFile(JFMPtr fm, int index, const char *newFilePath)
 }
 
 /*
- * @fn JFMPtr JFMRenameFile(JFMPtr fm, int index, const char *newFileName)
+ * @fn JFMPtr JFMRenameFilePath(JFMPtr fm, int index, const char *newFilePath)
  * @brief 지정한 파일의 이름을 새로 설정하는 함수
  * @param fm 파일 관리 구조체의 주소(출력)
  * @param index 파일의 인덱스 번호(입력)
- * @param newFileName 새로 설정할 파일 이름(입력, 읽기 전용)
+ * @param newFilePath 새로 설정할 파일 경로(입력, 읽기 전용)
  * @return 성공 시 파일 관리 구조체의 주소, 실패 시 NULL 반환
  */
-JFMPtr JFMRenameFile(JFMPtr fm, int index, const char *newFileName)
+JFMPtr JFMRenameFilePath(JFMPtr fm, int index, const char *newFilePath)
 {
-	if((fm == NULL) || (JFMCheckIndex(fm, index) == False) || (newFileName == NULL)) return NULL;
+	if((fm == NULL) || (JFMCheckIndex(fm, index) == False) || (newFilePath == NULL)) return NULL;
 
 	JFilePtr file = JFMGetFile(fm, index);
 	if(file == NULL) return NULL;
 
-	if(rename(file->path, newFileName) == -1) fm = NULL;
-	if(JFileSetName(file, newFileName) == NULL) fm = NULL;
+	if(rename(file->path, newFilePath) == -1) fm = NULL;
+	if(JFileSetName(file, newFilePath) == NULL) fm = NULL;
 
 	return fm;
 }
